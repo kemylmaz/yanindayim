@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.appjam.yaninda"
+    namespace = "com.appjam.yaninda.yaninda"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -20,7 +20,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.appjam.yaninda"
+        applicationId = "com.appjam.yaninda.yaninda"
         minSdk = 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
