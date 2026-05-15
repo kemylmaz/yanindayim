@@ -1,0 +1,231 @@
+{
+  "version": "1.0",
+  "language": "tr",
+  "description": "Psikolojik Ilk Yardim decision tree. WHO PFA Pocket Guide ve Kizilay PFA Saha Calisan Kilavuzu temel alinarak yazilmistir. LLM'e dokunmaz, koşulsuz çalışır.",
+  "rootNode": "root",
+  "nodes": {
+    "root": {
+      "type": "choice",
+      "title": "Yanindayim.",
+      "subtitle": "Şu an nasıl hissediyorsun?",
+      "options": [
+        {"label": "Çok korkuyorum", "next": "fear_1"},
+        {"label": "Nefes alamiyorum", "next": "breathing_1"},
+        {"label": "Yakinimi kaybettim", "next": "grief_1"},
+        {"label": "Yaraliyim", "next": "injured_1"},
+        {"label": "Sadece konuşmak istiyorum", "next": "talk_1"}
+      ]
+    },
+    "fear_1": {
+      "type": "info",
+      "title": "Korkmak çok doğal.",
+      "body": "Şu an hissettiklerin, vücudunun seni korumaya çalışmasının bir yolu. Kalbinin hızlı atması, ellerinin titremesi, ağlamak istemen — hepsi normal tepkiler. Birlikte yavaşlayalım.",
+      "next": "fear_2",
+      "nextLabel": "Devam"
+    },
+    "fear_2": {
+      "type": "info",
+      "title": "Önce şunu yapalım.",
+      "body": "Etrafına bak. 5 nesne say. Ne görüyorsun? Şimdi 4 ses dinle. Sonra 3 şeye dokun. Bu egzersize 'topraklanma' deniyor — zihnini geri getirir.",
+      "next": "fear_3",
+      "nextLabel": "Devam"
+    },
+    "fear_3": {
+      "type": "choice",
+      "title": "Şu an daha iyi misin?",
+      "options": [
+        {"label": "Biraz, devam edelim", "next": "breathing_1"},
+        {"label": "Hayır, hâlâ kötüyüm", "next": "fear_4"}
+      ]
+    },
+    "fear_4": {
+      "type": "info",
+      "title": "Tamam, sabırlıyım.",
+      "body": "Bazen rahatlamak zaman alır. Birlikte nefes egzersizi yapacağız. Sadece bana bir nefes ver yeter, gerisini ben söyleyeceğim.",
+      "next": "breathing_1",
+      "nextLabel": "Hazırım"
+    },
+    "breathing_1": {
+      "type": "info",
+      "title": "4-7-8 Nefes Egzersizi",
+      "body": "Bu egzersiz klinik olarak kanitlanmis bir rahatlama tekniği. 4 saniye burnundan nefes alırsın, 7 saniye tutarsın, 8 saniye ağzından verirsin. Birlikte 5 tur yapacağız.",
+      "next": "breathing_exercise",
+      "nextLabel": "Başlayalım"
+    },
+    "breathing_exercise": {
+      "type": "widget",
+      "widget": "BreathingExercise",
+      "params": {
+        "inhaleSeconds": 4,
+        "holdSeconds": 7,
+        "exhaleSeconds": 8,
+        "cycles": 5,
+        "guidanceText": "Birlikteyiz. Hiç acelemiz yok."
+      },
+      "next": "breathing_done"
+    },
+    "breathing_done": {
+      "type": "choice",
+      "title": "Çok iyi yaptın.",
+      "subtitle": "Şu an kendini nasıl hissediyorsun?",
+      "options": [
+        {"label": "Daha sakinim", "next": "calm_end"},
+        {"label": "Hâlâ zor", "next": "breathing_exercise"},
+        {"label": "Başka bir şey lazım", "next": "root"}
+      ]
+    },
+    "calm_end": {
+      "type": "info",
+      "title": "Burada olmak cesaret ister.",
+      "body": "Kendinle gurur duy. Şu an güvenli bir andasın. İhtiyaç hissedersen bana her zaman dön. Bir şey daha — yakındaki bir tanıdığa haber verdin mi? 'Güvendeyim' düğmesi bunu tek tıkla yapar.",
+      "next": "root",
+      "nextLabel": "Ana menüye dön"
+    },
+    "grief_1": {
+      "type": "info",
+      "title": "Kaybin için çok üzgünüm.",
+      "body": "Söyleyecek söz bulamıyorum çünkü gerçekten zor. Şu an hissettiklerin — boşluk, öfke, suçluluk, hiçbir şey hissetmemek — hepsi yas sürecinin parçası. Hiçbiri yanlış değil.",
+      "next": "grief_2",
+      "nextLabel": "Devam"
+    },
+    "grief_2": {
+      "type": "info",
+      "title": "Birinden haber bekliyor musun?",
+      "body": "Eğer hâlâ haber alamadığın yakının varsa AFAD aile birleştirme noktaları ve Kızılay'ın 'aileyi bul' hattı var. Bunlara nasıl ulaşacağını sana göstereceğim.",
+      "next": "grief_3",
+      "nextLabel": "Göster"
+    },
+    "grief_3": {
+      "type": "info",
+      "title": "Ne yapabilirsin?",
+      "body": "Kayıp ihbarı için: AFAD 122. Aile birleştirme noktaları AFAD koordinasyonundadır, en yakını için 'Toplanma' ekranına bak. Sosyal medyada #DepremdeKayıp etiketi de kullanılıyor.",
+      "next": "grief_4",
+      "nextLabel": "Devam"
+    },
+    "grief_4": {
+      "type": "info",
+      "title": "Şimdi kendine bak.",
+      "body": "Yas sürecinde uyku, yemek, su, hijyen — bunlar 'önemsiz' gibi gelir ama vücudun bunlara şu an çok ihtiyacı var. Bir yakının yanında ol veya birini ara.",
+      "next": "grief_5",
+      "nextLabel": "Devam"
+    },
+    "grief_5": {
+      "type": "choice",
+      "title": "Şu an ne lazım?",
+      "options": [
+        {"label": "Nefes egzersizi", "next": "breathing_1"},
+        {"label": "Birini aramak", "next": "checkin_redirect"},
+        {"label": "Sadece sessizlik", "next": "silence_end"}
+      ]
+    },
+    "silence_end": {
+      "type": "info",
+      "title": "Tamam. Burada bekliyorum.",
+      "body": "İstediğin zaman bu ekrana dönebilirsin. Şu an hiçbir şey yapmak zorunda değilsin. Var olmak bile yetiyor.",
+      "next": "root",
+      "nextLabel": "Ana menüye dön"
+    },
+    "checkin_redirect": {
+      "type": "redirect",
+      "title": "Acil kişi listene yönlendiriyorum",
+      "route": "/victim/checkin"
+    },
+    "injured_1": {
+      "type": "choice",
+      "title": "Yaralandığın için üzgünüm.",
+      "subtitle": "Hangisi daha yakın?",
+      "options": [
+        {"label": "Kanama var", "next": "injured_bleeding"},
+        {"label": "Kemik kırığı olabilir", "next": "injured_fracture"},
+        {"label": "Baş dönmesi/baygınlık", "next": "injured_dizzy"},
+        {"label": "Yanık var", "next": "injured_burn"},
+        {"label": "Sadece çok ağrı", "next": "injured_pain"}
+      ]
+    },
+    "injured_bleeding": {
+      "type": "info",
+      "title": "Kanamayı durdurmak için:",
+      "body": "1) Temiz bir bezle yaraya doğrudan ve sıkı baskı yap. 2) Mümkünse yaralı bölgeyi kalp seviyesinin üstüne kaldır. 3) Bezi kaldırma — kanı emen bezi çıkarmadan üstüne yenisini ekle. 4) Baskıyı en az 10 dakika sürdür. Eğer kanama büyük damarsa (fışkırarak) ve durmuyorsa, 5 cm üstüne sıkı bir sargı bağla.",
+      "next": "injured_call",
+      "nextLabel": "Yardım çağır"
+    },
+    "injured_fracture": {
+      "type": "info",
+      "title": "Kemik kırığı şüphesinde:",
+      "body": "1) Kırık olduğunu düşündüğün bölgeyi HAREKET ETTİRME. 2) Açık kırık ise (kemik dışarıda) yarayı temiz bezle ört, üzerine bastırma. 3) Bölgeyi olduğu pozisyonda sabitle — yanına bir tahta, kalın dergi, hatta diğer bacağa bağlayarak. 4) Şişlik için soğuk uygula ama dondurma. Yardım gelene kadar bekle.",
+      "next": "injured_call",
+      "nextLabel": "Yardım çağır"
+    },
+    "injured_dizzy": {
+      "type": "info",
+      "title": "Baş dönmesi ve baygınlık:",
+      "body": "Sırt üstü yat. Bacaklarını kalp seviyesinden 30 cm yukarı kaldır (üstüne bir şey koyabilirsin). Sıkı kıyafetleri gevşet. Soğuksa örtün ama aşırı ısınma. Bilinçsizsen — birisi yanındaysa yan yatış pozisyonuna alsın (kusarsan boğulmamak için).",
+      "next": "injured_call",
+      "nextLabel": "Yardım çağır"
+    },
+    "injured_burn": {
+      "type": "info",
+      "title": "Yanıkta ilk müdahale:",
+      "body": "1) Yanan bölgeyi 10-20 dakika OLABİLDİĞİNCE soğuk akan suya tut. Buz KULLANMA. 2) Yanık üzerindeki yapışmamış kıyafeti çıkar, yapışanı ÇIKARMA. 3) Yanık kabarcığını PATLATMA. 4) Temiz bezle gevşek örtü. Diş macunu, yoğurt, yağ KULLANMA.",
+      "next": "injured_call",
+      "nextLabel": "Yardım çağır"
+    },
+    "injured_pain": {
+      "type": "info",
+      "title": "Ağrıyı yönetmek:",
+      "body": "Mümkün olduğunca hareketsiz kal. Ağrılı bölgeyi destekle. Yutkunabiliyorsan ve eline ulaşıyorsa parasetamol (kalp/böbrek hastalığın yoksa) alabilirsin. Aspirin, ibuprofen — eğer kanama ihtimali varsa ALMA. Kendinizi izle: ağrı artıyor mu? bilinç bulanıklaşıyor mu? Bunlar olursa SOS gönder.",
+      "next": "injured_call",
+      "nextLabel": "Yardım çağır"
+    },
+    "injured_call": {
+      "type": "choice",
+      "title": "Yardım çağırmak ister misin?",
+      "options": [
+        {"label": "SOS gönder (Düdük + 112 + SMS)", "next": "sos_redirect"},
+        {"label": "Şimdi değil, sadece beklemek istiyorum", "next": "wait_end"}
+      ]
+    },
+    "sos_redirect": {
+      "type": "redirect",
+      "title": "SOS sayfasına yönlendiriyorum",
+      "route": "/victim/sos"
+    },
+    "wait_end": {
+      "type": "info",
+      "title": "Buradayım.",
+      "body": "Fikrin değişirse ana ekrandan SOS'a istediğin an basabilirsin. Şu an birlikte sakin kalalım. Suyun varsa küçük yudumlar al. Hareketsiz dur, vücudun kendini onarmaya çalışıyor.",
+      "next": "root",
+      "nextLabel": "Ana menüye dön"
+    },
+    "talk_1": {
+      "type": "info",
+      "title": "Buradayım, dinliyorum.",
+      "body": "Konuşmak iyileştirir. Sadece bana bir şey söyle istersen — düşüncelerin, hatıraların, korkuların. Yargılamıyorum. Hatta bana hiç tanımadığın biri gibi davranabilirsin, çünkü öyleyim.",
+      "next": "talk_2",
+      "nextLabel": "Devam"
+    },
+    "talk_2": {
+      "type": "info",
+      "title": "Hatırla:",
+      "body": "Şu an hissettiğin her şey gerçek. Ama bu hisler kalıcı değil. Acı geçer, kayıplar her zaman acıtır ama dayanılır hale gelir. Sen yalnız değilsin — şu an binlerce insan aynı şeyi yaşıyor.",
+      "next": "talk_3",
+      "nextLabel": "Devam"
+    },
+    "talk_3": {
+      "type": "choice",
+      "title": "Sıradaki adım?",
+      "options": [
+        {"label": "Nefes egzersizi yapalım", "next": "breathing_1"},
+        {"label": "Yakınıma haber vereyim", "next": "checkin_redirect"},
+        {"label": "Biraz daha burada kalmak istiyorum", "next": "talk_4"}
+      ]
+    },
+    "talk_4": {
+      "type": "info",
+      "title": "Tamam.",
+      "body": "İstediğin kadar burada kal. Yorulduğunda dinlen. Susadığında su iç. Acıktığında bir şey ye, küçük lokmalar olsun. Tuvalete gitmen gerekirse git. Vücudunla ilgilenmek de kendini koruma şeklin.",
+      "next": "root",
+      "nextLabel": "Ana menüye dön"
+    }
+  }
+}
