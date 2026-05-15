@@ -1,0 +1,76 @@
+name: yaninda
+description: "Deprem hayatta kalma ve kurtarma uygulamasi - AppJam Hackathon"
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # State management
+  flutter_riverpod: ^2.5.1
+
+  # Routing
+  go_router: ^14.0.0
+
+  # BLE - beacon advertise + scan
+  flutter_blue_plus: ^1.32.12
+
+  # Audio - whistle playback (looping)
+  audioplayers: ^6.0.0
+
+  # Voice recognition (offline if device has the language pack)
+  speech_to_text: ^7.0.0
+
+  # Location
+  geolocator: ^13.0.0
+
+  # SMS & 112 call - via url_launcher intent
+  url_launcher: ^6.2.5
+
+  # Maps (offline tile support)
+  flutter_map: ^7.0.0
+  latlong2: ^0.9.0
+
+  # Sensors - accelerometer for earthquake/stillness detection
+  sensors_plus: ^6.0.0
+
+  # Local storage
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  shared_preferences: ^2.2.2
+
+  # Background work - keep beacon alive when screen off
+  flutter_background_service: ^5.0.5
+
+  # Permissions
+  permission_handler: ^11.3.0
+
+  # UI - fonts and animations
+  google_fonts: ^6.2.1
+  flutter_animate: ^4.5.0
+
+  # Utilities
+  uuid: ^4.3.3
+  intl: ^0.19.0
+
+  # Local AI - on-device LLM (Gemma via MediaPipe)
+  flutter_gemma: ^0.8.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/audio/
+    - assets/pfa_flow.json
+    - assets/knowledge_base/
+    - assets/maps/

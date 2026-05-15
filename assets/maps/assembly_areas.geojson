@@ -1,0 +1,359 @@
+{
+  "type": "FeatureCollection",
+  "name": "Turkiye Toplanma Alanlari - DEMO STUB",
+  "description": "Bu dosya hackathon demosu icin yaklasik koordinatlarla hazirlanmis ornektir. Gercek toplanma alanlari afad.gov.tr/toplanma-alanlari-listesi adresindeki resmi CSV ile degistirilmelidir.",
+  "version": "0.1-stub",
+  "lastUpdated": "2026-05-15",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [28.9810, 41.0117]},
+      "properties": {
+        "id": "ist_001",
+        "name": "Gulhane Parki",
+        "city": "Istanbul",
+        "district": "Fatih",
+        "type": "park",
+        "capacity": 10000,
+        "facilities": ["su", "tuvalet", "elektrik"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [28.9905, 41.0469]},
+      "properties": {
+        "id": "ist_002",
+        "name": "Macka Demokrasi Parki",
+        "city": "Istanbul",
+        "district": "Sisli",
+        "type": "park",
+        "capacity": 15000,
+        "facilities": ["su", "tuvalet"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [29.0149, 41.0492]},
+      "properties": {
+        "id": "ist_003",
+        "name": "Yildiz Parki",
+        "city": "Istanbul",
+        "district": "Besiktas",
+        "type": "park",
+        "capacity": 20000,
+        "facilities": ["su", "tuvalet", "elektrik"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [29.1244, 40.9302]},
+      "properties": {
+        "id": "ist_004",
+        "name": "Goztepe 60. Yil Parki",
+        "city": "Istanbul",
+        "district": "Kadikoy",
+        "type": "park",
+        "capacity": 8000,
+        "facilities": ["su", "tuvalet"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [29.1611, 40.9358]},
+      "properties": {
+        "id": "ist_005",
+        "name": "Fenerbahce Parki",
+        "city": "Istanbul",
+        "district": "Kadikoy",
+        "type": "park",
+        "capacity": 12000,
+        "facilities": ["su", "tuvalet", "elektrik"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [29.1306, 40.9356]},
+      "properties": {
+        "id": "ist_006",
+        "name": "Selamicesme Ozgurluk Parki",
+        "city": "Istanbul",
+        "district": "Kadikoy",
+        "type": "park",
+        "capacity": 7000,
+        "facilities": ["su"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [28.6536, 40.9928]},
+      "properties": {
+        "id": "ist_007",
+        "name": "Bahcesehir Golet Parki",
+        "city": "Istanbul",
+        "district": "Basaksehir",
+        "type": "park",
+        "capacity": 25000,
+        "facilities": ["su", "tuvalet"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [32.8541, 39.9208]},
+      "properties": {
+        "id": "ank_001",
+        "name": "Genclik Parki",
+        "city": "Ankara",
+        "district": "Altindag",
+        "type": "park",
+        "capacity": 15000,
+        "facilities": ["su", "tuvalet", "elektrik"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [32.8639, 39.9008]},
+      "properties": {
+        "id": "ank_002",
+        "name": "Kugulu Park",
+        "city": "Ankara",
+        "district": "Cankaya",
+        "type": "park",
+        "capacity": 5000,
+        "facilities": ["su", "tuvalet"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [32.8367, 39.9094]},
+      "properties": {
+        "id": "ank_003",
+        "name": "Sehit Cengiz Topel Parki",
+        "city": "Ankara",
+        "district": "Cankaya",
+        "type": "park",
+        "capacity": 6000,
+        "facilities": ["su", "tuvalet"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [32.8204, 39.9251]},
+      "properties": {
+        "id": "ank_004",
+        "name": "Anittepe Parki",
+        "city": "Ankara",
+        "district": "Cankaya",
+        "type": "park",
+        "capacity": 10000,
+        "facilities": ["su", "tuvalet"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [27.1428, 38.4319]},
+      "properties": {
+        "id": "izm_001",
+        "name": "Kulturpark",
+        "city": "Izmir",
+        "district": "Konak",
+        "type": "park",
+        "capacity": 20000,
+        "facilities": ["su", "tuvalet", "elektrik"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [27.1153, 38.4569]},
+      "properties": {
+        "id": "izm_002",
+        "name": "Bostanli Sahil Parki",
+        "city": "Izmir",
+        "district": "Karsiyaka",
+        "type": "sahil",
+        "capacity": 18000,
+        "facilities": ["su", "tuvalet"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [27.2103, 38.4789]},
+      "properties": {
+        "id": "izm_003",
+        "name": "Bornova Buyuk Park",
+        "city": "Izmir",
+        "district": "Bornova",
+        "type": "park",
+        "capacity": 12000,
+        "facilities": ["su", "tuvalet"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [29.0610, 40.1828]},
+      "properties": {
+        "id": "brs_001",
+        "name": "Soganli Kentsel Donusum Parki",
+        "city": "Bursa",
+        "district": "Yildirim",
+        "type": "park",
+        "capacity": 8000,
+        "facilities": ["su", "tuvalet"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [29.0414, 40.1925]},
+      "properties": {
+        "id": "brs_002",
+        "name": "Bursa Kulturpark",
+        "city": "Bursa",
+        "district": "Osmangazi",
+        "type": "park",
+        "capacity": 15000,
+        "facilities": ["su", "tuvalet", "elektrik"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [35.3214, 37.0017]},
+      "properties": {
+        "id": "ada_001",
+        "name": "Ataturk Parki",
+        "city": "Adana",
+        "district": "Seyhan",
+        "type": "park",
+        "capacity": 10000,
+        "facilities": ["su", "tuvalet"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [35.3325, 37.0042]},
+      "properties": {
+        "id": "ada_002",
+        "name": "Sabanci Merkez Camii Alani",
+        "city": "Adana",
+        "district": "Seyhan",
+        "type": "meydan",
+        "capacity": 8000,
+        "facilities": ["su"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [37.0700, 37.0833]},
+      "properties": {
+        "id": "gaz_001",
+        "name": "Gaziantep 100. Yil Parki",
+        "city": "Gaziantep",
+        "district": "Sahinbey",
+        "type": "park",
+        "capacity": 15000,
+        "facilities": ["su", "tuvalet"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [36.2031, 36.2025]},
+      "properties": {
+        "id": "hat_001",
+        "name": "Antakya Cumhuriyet Meydani",
+        "city": "Hatay",
+        "district": "Antakya",
+        "type": "meydan",
+        "capacity": 7000,
+        "facilities": [],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [36.9325, 38.2811]},
+      "properties": {
+        "id": "kmr_001",
+        "name": "Kahramanmaras Trabzon Bulvari Parki",
+        "city": "Kahramanmaras",
+        "district": "Onikisubat",
+        "type": "park",
+        "capacity": 9000,
+        "facilities": ["su"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [39.7167, 41.0050]},
+      "properties": {
+        "id": "trb_001",
+        "name": "Ataturk Alani",
+        "city": "Trabzon",
+        "district": "Ortahisar",
+        "type": "meydan",
+        "capacity": 8000,
+        "facilities": ["su", "tuvalet"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [30.7133, 36.8841]},
+      "properties": {
+        "id": "ant_001",
+        "name": "Karaalioglu Parki",
+        "city": "Antalya",
+        "district": "Muratpasa",
+        "type": "park",
+        "capacity": 12000,
+        "facilities": ["su", "tuvalet"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [29.0667, 41.3550]},
+      "properties": {
+        "id": "kcl_001",
+        "name": "Kocaeli Kentsel Donusum Toplanma Alani",
+        "city": "Kocaeli",
+        "district": "Izmit",
+        "type": "park",
+        "capacity": 10000,
+        "facilities": ["su", "tuvalet"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [37.9167, 38.3500]},
+      "properties": {
+        "id": "mly_001",
+        "name": "Malatya Mishelis Parki",
+        "city": "Malatya",
+        "district": "Yesilyurt",
+        "type": "park",
+        "capacity": 9000,
+        "facilities": ["su"],
+        "isOfficial": true
+      }
+    }
+  ]
+}

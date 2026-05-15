@@ -1,0 +1,266 @@
+{
+  "version": "1.0",
+  "language": "tr",
+  "totalChunks": 32,
+  "embeddingModel": "paraphrase-multilingual-MiniLM-L12-v2",
+  "embeddingDimensions": 384,
+  "note": "Embedding'ler scripts/build_knowledge_base.py ile uretilir. v0'da bos array, runtime'da hesaplanabilir.",
+  "chunks": [
+    {
+      "id": "eq_pre_01",
+      "source": "AFAD - Deprem Oncesi Hazirlik",
+      "category": "deprem_oncesi",
+      "title": "Evde Yapilacak Onlemler",
+      "text": "Deprem oncesi en onemli adim, ev icindeki esyalari sabitlemektir. Dolaplar, kitapliklar, buzdolabi gibi devrilebilecek mobilyalar duvara L-profil dirseklerle vidalanmalidir. Asili tablolar, raflar ve aydinlatma armatürleri kanca yerine zincir veya L-vida ile sabitlenmelidir. Yataklarin uzerine ve baskoltuk arkasina agir esya konmamalidir. Camli vitrinler, akvaryumlar ve uzun cam vazolar yataklardan ve oturma alanlarindan uzakta olmalidir. Kacis yollarinda (kapilar, koridorlar) hicbir esya olmamalidir. Mutfakta cam ve seramik esyalar alcakta, gece açilmasini engelleyen kilitli dolaplarda durmalidir. Tuplu gaz ve elektrik vanalarinin nerede oldugunu butun aile bilmelidir.",
+      "embedding": []
+    },
+    {
+      "id": "eq_pre_02",
+      "source": "AFAD - Deprem Cantasi",
+      "category": "deprem_oncesi",
+      "title": "Deprem Cantasi Icerigi",
+      "text": "Deprem cantasi her ailenin hazirda bulundurmasi gereken acil cantadir. Icerigi: kisi basina 3 gunluk su (gunde 2 litre), bozulmayan konserve yiyecekler ve konserve acacagi, dusuk dB el feneri ve yedek pil, dusuk guc tuketen radyo (cep telefonu sarji icin de calisan tip), ilk yardim cantasi (sargi, dezenfektan, makas, eldiven, agri kesici, sahsi ilaclar), du-dak (toz maskesi), saglik kartlari ve nufus cuzdani fotokopisi, az miktar nakit (ATM calismayabilir), su geçirmez torba, dudukle isaret cihazi, yedek gozluk, kalin batarya (powerbank), aile resimleri ve onemli numaralar yazili kart, bebek varsa bebek bezi ve mama, yedek anahtarlar, kalin battaniye veya isi koruyucu folyo battaniye. Cantayi yatak odasinin kapinin yaninda veya cikis yolunun yakininda tut.",
+      "embedding": []
+    },
+    {
+      "id": "eq_pre_03",
+      "source": "Kizilay - Aile Afet Plani",
+      "category": "deprem_oncesi",
+      "title": "Aile Bulusma Plani",
+      "text": "Deprem sonrasi telefonlar coker, ailen dagilir. Bu yuzden onceden bulusma planlari yapilmalidir. Birinci bulusma yeri: evin yaninda, agacin altinda gibi guvenli ortak nokta. Ikinci bulusma yeri: mahalle disinda, evin yikilmasi durumunda buyuk park veya okul. Ucuncu bulusma yeri: sehir disinda, bir akrabanin evi. Aile uyeleri biribirine ulasamadiginda, aileden olmayan bir tanidik (sehir disinda yasayan) 'irtibat kisisi' olarak belirlenir — herkes onu arayarak nerede oldugunu soyler. Cocuklar bu numarayi ezberlemeli veya boyunlarinda asili tasimalidir. Yilda en az 2 kez aile deprem provasi yapilmalidir.",
+      "embedding": []
+    },
+    {
+      "id": "eq_pre_04",
+      "source": "AFAD - Bina Risk",
+      "category": "deprem_oncesi",
+      "title": "Binanizin Riski",
+      "text": "Bina riskini degerlendirmek icin: 1999 oncesi yapilmis binalar (TMMOB ve deprem yonetmeligi gunumuzdeki kadar siki degildi) ek risk altindadir. Zemin kati ticari (kafe, market) olan binalarda yumusak kat etkisi riski vardir — alttaki kolonlar zayif olabilir. Egimli arsada yapilan, gozeli kat eklenen, kacak ekstra kati olan binalar riskli. Binanin temelinde catlak, kolonda donati paslanmasi, beton segregasyonu varsa derhal bir insaat muhendisine danis. Bina deprem dayanikliligi yapi denetim firmalarinca veya buyuksehir belediyelerinin verdigi izinli kuruluslar tarafindan kontrol edilebilir. Riskli ise kentsel donusum kapsaminda guclendirilmesi gerekebilir.",
+      "embedding": []
+    },
+    {
+      "id": "eq_pre_05",
+      "source": "Kizilay - Cocuga Deprem Anlatmak",
+      "category": "deprem_oncesi",
+      "title": "Cocuga Deprem Anlatmak",
+      "text": "Cocuklara deprem korkutucu bir konu olmadan anlatilmalidir. Yaslarina uygun, abartmadan, ama gercegi gizlemeden. Kuçuk cocuklara (3-6 yas): 'Bazen yer biraz sallaniyor, biz buna deprem diyoruz. O zaman senin yapacagin sey: bir masanin altina girip onun ayagini tutmak, ta ki ben gelene kadar.' Daha buyuk cocuklara (7-12 yas): deprem nedir bilimsel olarak anlatilir, evde nereye gidecekleri tek tek soyutmadan gosterilir. Aile birlikte 'cok-kapan-tutun' provasini yapar. Cocuklarin korkulari ciddiye alinmali, alaya alinmamalidir. Cocuga 'sen kucuksun, anlamazsin' demek yerine 'iyi soru, soyle anlatayim' demek lazim.",
+      "embedding": []
+    },
+    {
+      "id": "eq_during_01",
+      "source": "AFAD - Deprem Aninda",
+      "category": "deprem_ani",
+      "title": "Cok Kapan Tutun",
+      "text": "Deprem sirasinda en onemli kural: 'cok-kapan-tutun'. COK: hemen dizlerinin uzerine cok, koşarak duşmenden iyidir. KAPAN: ellerinle ve kollarinla bas ve boyun bolgeni kapat. Mumkunse saglam bir masanin altina gir veya bir köşe duvarin yaninda cömel (yikilirsa duvar bir taraf duvar olusturur, hayat ucgeni). TUTUN: masanin ayagina tutun, sallandikca seninle birlikte hareket etsin. ASLA: kosarak diş ari çikma (merdivenler tehlikeli, asansör asla), pencereden atlama, asansore binme, kapida durma (eski yapi yapilmiyor, modern kapi cercevesi koruyucu degil). Sallanma 1-3 dakika surebilir, bekle. Tamamen durunca dikkatli sekilde diş ari ci.",
+      "embedding": []
+    },
+    {
+      "id": "eq_during_02",
+      "source": "AFAD - Deprem Aninda",
+      "category": "deprem_ani",
+      "title": "Icerideyseniz",
+      "text": "Bina icindeyseniz: ic kismida kalmaya cabalayin, diş ari kacmaya calismayin. Cam ve dis kapilardan uzak durun — kirilan camlar buyuk yaralanma sebebi. Yatağindaysan: yataktan inip yataginin kenarina çök veya yaslan, yastik yastiklarla basini koru. Mutfak ve banyo gibi cam, seramik agirlikli odalar tehlikeli. Genis acik yerler (salon ortasi) tavanın cokmesinde direk risk altindadir, koselerin yaninda dur. Yangin baslama ihtimali icin ocaktan, sicaktan uzak dur. Asansore, balkona, terasa cikma. Eski binadaysan ve birinci/ikinci kattaysan, pencereye yakin kosede dur — ilk olarak ust katlar cokme egiliminde olur. Sallanma bittiginde sakin sekilde toplanma alanina git.",
+      "embedding": []
+    },
+    {
+      "id": "eq_during_03",
+      "source": "AFAD - Deprem Aninda",
+      "category": "deprem_ani",
+      "title": "Disaridaysaniz",
+      "text": "Dis aridaysaniz: hemen acik bir alana gidin. Binalardan, elektrik diraklerinden, sokak lambalarindan, dukkan tabelalarindan, viaduklerden, ust geclitlerden, agaclardan uzaklasin. Acik bir alanda yere cokun, basinizi ellerinizle koruyun, sallanma bitene kadar hareket etmeyin. Genelde tek bir binadan en az binanin yuksekligi kadar uzaklasilmali. Dar sokaklarda cephe duşmesi ve bina cokmesi ciddi tehlikedir. Eger merkez aliminda bir parka veya buyuk meydana ulasabiliyorsan oraya git. Yer sallanmasi nedeniyle ayakta duramayabilirsin, dort ayak uzerine cik. Cocuklarin elinden tutma — onlari yere cektir, basi koru.",
+      "embedding": []
+    },
+    {
+      "id": "eq_during_04",
+      "source": "AFAD - Deprem Aninda",
+      "category": "deprem_ani",
+      "title": "Aractaysaniz",
+      "text": "Aractaysaniz: derhal trafigi engellemeyecek sekilde acik bir alana cekin. Üst gecit, viadük, kopru, tunel, elektrik dirakleri altindan derhal uzaklasin. Aracinizdan inmeyin — arac size kismi koruma saglar. Sismi emniyet kemerini takili tutun, basinizi golgesle koruyun. Radyodan gelisme bilgileri dinleyin. Sallanma bitene kadar bekleyin. Sallanma bittikten sonra: araci hareket ettirmeden once altinda kalan kabloldan, yikinti olusabilecek strukturlarden, yarilmis yollardan emin olun. Yangın tehlikesi varsa derhal motoru kapatın, kontaki açık birakin. Eger asansoru veya viadüğun altinda ise cikmaya calismayin — yıkilirsa kacis daha tehlikeli olur.",
+      "embedding": []
+    },
+    {
+      "id": "rubble_01",
+      "source": "AKUT - Enkaz Alti",
+      "category": "enkaz_alti",
+      "title": "Enkaz Altinda Ilk Dakikalar",
+      "text": "Enkaz altinda kaldiysan: panigi durdurmak hayatta kalmanin ilk adimidir. Derin nefes al, ortami degerlendir. Hareket etmeden once kontrol et: kendi yaralanmalarin (kanama, kirik, baş yaralanmasi). Vucudunda neresinin ezildigini hisset. Üstundeki bir cisim sikistirma var mi? Acelene gelme — yanlis bir hareket daha buyuk yıkıma sebep olabilir. Toza karsi agzini bir bez ile (gomlek, etek vb.) ört, agzinda toz yutarsan akciger acil sorun olur. Ayak veya kol sikistiysa hareket etmeye calisma, doku zedelenmesi yarisini azaltir. Etrafindaki bosluklari mum (varsa) yakma — gaz sizinti riski cok. Sadece telefon isigi kullan, bunu da kisaca, pil tasarrufu icin.",
+      "embedding": []
+    },
+    {
+      "id": "rubble_02",
+      "source": "AKUT - Enkaz Alti",
+      "category": "enkaz_alti",
+      "title": "Pil ve Telefon Tasarrufu",
+      "text": "Enkaz altinda telefon hayat kurtaricidir, pili maksimum verim icin kullanilmalidir. Hemen: ucak moduna al (sebeke aramaktan vazgec — zaten yok, pili tuketir), parlakligi minimum yap, klavye titresimini kapat, butun bildirimleri kapat, GPS'i kapat (zaten son konum kayitli). Eğer 'Yanında' uygulamasi varsa, 'Enkaz Modu'na geç — bu pili daha akilli kullanir, ekrani kapatir, sadece BLE Beacon yayinini koruva sürdürür. Tahmini kalan pil suresi: %50 pile sahip modern telefon, enkaz modunda 12-18 saat dayanabilir. Eger telefon donarsa, restart yerine sadece bilinmeyen islemleri durdur. Kamera flasi kullanmaktan kacin — cok pil tuketir. SMS gondermek aramadan az pil tuketir.",
+      "embedding": []
+    },
+    {
+      "id": "rubble_03",
+      "source": "AKUT - Enkaz Alti",
+      "category": "enkaz_alti",
+      "title": "Su ve Nefes Yonetimi",
+      "text": "Enkaz altinda en buyuk tehdit susuzluk degil, dehidratasyondan once panik ve yaralanmadir. Yaninda su varsa, kucuk yudumlar al, bir defada bitirme. Su yoksa, agzini kuru tutmamaya cabala — tukruk uretimini sürdürmek dudaklarini birak. Idrar ile ic — sadece son care, ve daha cok dehidratasyona sebep olur. Nefes yonetimi: agzini bir bez veya kiyafetin parcasiyla ort, toza karsi koru. Sabit ve yavas nefes al, nefesini boşa harcama — bagirma yerine duduk veya tap-tap (vurus) kullanarak sinyal ver. Bayilma hissini sıralana 4 saniye nefes al, 4 saniye ver — saglikli nefes ritmi.",
+      "embedding": []
+    },
+    {
+      "id": "rubble_04",
+      "source": "AKUT - Enkaz Alti",
+      "category": "enkaz_alti",
+      "title": "Yardim Sinyali Verme",
+      "text": "Enkaz altindan yardim sinyali vermek icin en iyi yontemler: 1) Beacon yayini (BLE) — telefon pasif sekilde sinyal yayar, kurtariciler tarayicisiyla bulur. 2) Duduk — bagirmaktan cok daha az enerji harcar ve daha uzaktan duyulur. Eger duduk yoksa, dudagini buzup yuksek tonlu sesli iclik. 3) Metal cisme ritmik vurus — tahta ve duzelten daha uzaga ileti, 3-3-3 ritmi (3 vurus, ara, 3 vurus, ara, 3 vurus) uluslararasi SOS isaretidir, fakat basit 'her bir dakikada bir defa surekli vur' da yeter. 4) Bagirma — son care, sadece yakindan bir ses duydugunuzda. Bagiran bagirmayi kesmesin, enerji ile harcar ve toz yutar. 5) Telefon flası gizli yerlerden gozukebilir — ayna gibi karsidan gelen isigi yansitabilirsin.",
+      "embedding": []
+    },
+    {
+      "id": "rubble_05",
+      "source": "AKUT - Enkaz Alti",
+      "category": "enkaz_alti",
+      "title": "Kendini Degerlendirme",
+      "text": "Enkaz altinda kendi yaralanmalarini degerlendirmek icin: 1) Bilinc — adın nedir? burası neresi? hangi gunde misin? Bunlari kendi kendine sor. Cevap bulanik ise basini darbe almis olabilir. 2) Solunum — normal mi, hizli mi, agirli mi? Eger solunum cok aciliysa bogazinda toz veya kan olabilir. 3) Kanama — vücudunu yumuşak elle tara, yapis kan var mi? Kanama varsa baski uygula. 4) Hareket — parmaklarini, ayak parmaklarini kipirdat. Kipirdatamiyorsan omurilik yaralanmasi riski var, kesinlikle hareket etme. 5) Sikisma — bir kolun veya bacaginsa basili durumda mi? Eger 2 saatten cok sikisip kalmissa o uzvu kurtaranlara haber ver — cikmadan once tibbi destek lazim (crush syndrome riski).",
+      "embedding": []
+    },
+    {
+      "id": "fa_01",
+      "source": "Kizilay - Ilk Yardim",
+      "category": "ilk_yardim",
+      "title": "Kanama Durdurma",
+      "text": "Kanamayi durdurmak icin once dis kanama (gozle gorulen) ve ic kanama (gozle gorulmeyen) ayrimi yap. Dis kanamada: 1) Eldiven varsa giy (degil ise temiz bezle el). 2) Temiz bir bez veya kiyafet parcasi ile yaraya dogrudan ve sıki baski uygula. 3) Yaraya yapisan bezi ASLA cikarma — uzerine baska bez ekle. 4) Yarali bolgeyi mumkunse kalp seviyesinin uzerine kaldir. 5) Baskiyi en az 10 dakika kesintisiz uygula. 6) Cok siddetli kanamada (atardamarsa fışkırıyor) 5 cm yukarisina sargi bag uygula. Turnike SADECE son care — beraberinde sure bilgisini yaz. Ic kanama belirtileri: solgun deri, kuller terleme, hizli zayif nabiz, baş donmesi, susuzluk — hemen 112 ara, hastaya hareket ettirme.",
+      "embedding": []
+    },
+    {
+      "id": "fa_02",
+      "source": "Kizilay - Ilk Yardim",
+      "category": "ilk_yardim",
+      "title": "Kirik ve Cikiklarda",
+      "text": "Kirik supheli durumda: 1) Hastayi hareket ETTIRME, zorlama ile ileterken kemik daha cok zarar verebilir. 2) Acik kirik mi kontrol et (kemik dis ari) — varsa yarayi temiz bezle ort, baski yapma. 3) Kirik bolgeyi oldugu pozisyonda sabitle: yanina bir tahta, kalin dergi, hatta bir kol diger kola, bir bacak diger bacaga baglayarak. Sabit cisim yarali bolgenin altinda ve ustundeki eklemleri kapsamali. 4) Sislik icin soguk uygula ama buz direk degil — buzu bir beze sar. 5) Su veya yemek verme (cerrahi gerekebilir). 6) Aci kesici verme (vital bulgularini gizler, bazi ilaclar kanamayi artirir). Cocuklarda kirik daha az gozukur, sismeye dikkat et. Ozellikle uyluk, kafatasi, omurga kiriklari hayati tehlikedir, hareket ettirme.",
+      "embedding": []
+    },
+    {
+      "id": "fa_03",
+      "source": "Saglik Bakanligi - Temel Yasam Destegi",
+      "category": "ilk_yardim",
+      "title": "Bilinc Kontrolu AVPU",
+      "text": "Bilinc seviyesi degerlendirmek icin AVPU yöntemi: A (Alert) = Uyanik, gözleri acik, normal cevap veriyor. V (Voice) = Sesli uyariya cevap veriyor (gozlerini aciyor, sese tepki). P (Pain) = Sadece agriya cevap veriyor (ornegin omuza sikma). U (Unresponsive) = Hicbir uyariya cevap yok, tepkisiz. P ve U seviyesi hayati tehlikededir, 112 hemen aranmali. Bilincsiz hastaya: 1) Solunumu kontrol et — gogus iniyor mu, agizdan nefes hissi var mi? 2) Solunum yoksa CPR baslat. 3) Solunum varsa toparlanma pozisyonu (yan yatış, üst bacak buküm, baş hafif öne) — kustugunda bogulmamasi icin. Bilincli ama bulanikse: hareketsiz tutman, dik tutmaman, sicak tutmaman lazim.",
+      "embedding": []
+    },
+    {
+      "id": "fa_04",
+      "source": "Saglik Bakanligi - Temel Yasam Destegi",
+      "category": "ilk_yardim",
+      "title": "Solunum Yolu Acma",
+      "text": "Bilincsiz hastanin solunumu yoksa veya zorlaniyorsa, oncelikle solunum yolu acilmalidir. Yontem (head-tilt chin-lift): 1) Hastayi sirt ustu yatir (eger boyun yaralanmasi şüphesi yoksa). 2) Bir elini hastanin alninda, diger elini cenenin altinda. 3) Alnini geriye dogru bastir, ceneyi hafif yukari kaldir — boylece dil arka tarafa düşmez, soluk borusu acilir. 4) 10 saniye dinle, izle, hisset: bak (gogus hareketi), dinle (nefes sesi), hisset (yanagında hava). 5) Solunum varsa toparlanma pozisyonuna al. Yoksa CPR baslat. Boyun yaralanmasi süpheli ise (yuksek bir yerden düşmüs, trafik kazasi gibi) jaw-thrust yontemi: ceneyi öne çekmek (alnı bastırmadan, basını cevirmeden) yapilir, daha zor ama omurilik korunur.",
+      "embedding": []
+    },
+    {
+      "id": "fa_05",
+      "source": "Saglik Bakanligi - CPR",
+      "category": "ilk_yardim",
+      "title": "CPR Temel Basamaklari",
+      "text": "Yetiskin CPR (kalp-akciger canlandirma): 1) Guvenligi kontrol et, hastayi sirt ustu yatir. 2) Bilinc yok ve solunum yoksa 112 ara veya birinin aramasini iste. 3) El topuğu hastanin gogus kafesinin merkezine (memeler arasi hat), diger el ustune. 4) Kollar dik, gogus 5-6 cm cokunceye kadar bas. 5) Dakikada 100-120 hizinda 30 bası. 'Stayin' Alive' sarki ritmi. 6) Saglik mesleginden degilsen sadece bastirma (sadece kompresyon) yeterli — sun'i solunum vermek zorunda degilsin. 7) Yorulunca veya yardimci geldiginde nobetlesin. 8) AED (otomatik defibrilator) varsa ac, sesli yonlendirmeyi takip et. CPR'i hasta uyanana, profesyonel yardim gelene veya bitkin dusene kadar surdur. Cocuk CPR'i biraz farklidir — 1 el ile, daha az derin. Bebek CPR'i 2 parmakla.",
+      "embedding": []
+    },
+    {
+      "id": "fa_06",
+      "source": "Kizilay - Sok",
+      "category": "ilk_yardim",
+      "title": "Sok Belirtileri",
+      "text": "Sok, vucudun doku ve organlarinin yeterli kana sahip olmamasi ile olusan bir durumdur, hayati tehlikededir. Belirtiler: 1) Solgun, soguk ve nemli deri. 2) Hızli ve zayif nabiz (kalbinden 100+ atim). 3) Hızli ve yuzeysel solunum. 4) Halsizlik, baygnlik. 5) Susuzluk hissi. 6) Mide bulanmasi, kusma. 7) Konsantrasyon kaybi, korku, anksiyete. 8) Vucut sicakliginda dusus. 9) Soluk dudak, dil. Müdahale: hastayi sirt ustu yatir, bacaklari 30 cm yukari kaldir (eger kirik yoksa). Sicak tut, ama asiri isitma. Sikan kiyafetleri gevset. Su veya yemek VERME (cerrahi olabilir). Bilincsizse veya kusuyorsa yan yatış pozisyonu. 112 ara, hemen tibbi muddahale gerek. Sokun sebebi (kanama, alerjik, kalp) bulunup ona gore tedavi edilmelidir.",
+      "embedding": []
+    },
+    {
+      "id": "fa_07",
+      "source": "Kizilay - Yanik",
+      "category": "ilk_yardim",
+      "title": "Yanik Tedavisi",
+      "text": "Yanik dereceleri: 1. derece — kizarik, ağrılı, kabarcik yok (gunes yanigi gibi). 2. derece — kabarcik var, cok agrili, açık pembe. 3. derece — beyaz/siyah, ağrı az veya yok (sinirler de yandi), derin doku hasari. Müdahale: 1) Kaynağı uzaklaştır (alev — sondur, sicak su — uzakla). 2) Yanan bolgeyi 10-20 dakika OLABILDIGINCE soguk akan SUYA tut. BUZ KULLANMA — daha cok zarar verir. 3) Yanik üzerindeki yapışmamış kiyafeti çıkar, yapışanı ÇIKARMA. 4) Kabarcığı PATLATMA. 5) Diş macunu, yoğurt, yağ, kar, alkol KULLANMA — bunlar enfeksiyon yapar. 6) Temiz bezle gevsek örtu. 7) 2. derece ve 3. derece tum yaniklar, yuz/el/ayak/genital/eklem yanigi, % 10'dan büyük yanik — derhal hastane. Cocukta % 5 bile tehlikeli.",
+      "embedding": []
+    },
+    {
+      "id": "fa_08",
+      "source": "AKUT - Yarali Tasima",
+      "category": "ilk_yardim",
+      "title": "Yarali Tasima Kurallari",
+      "text": "Yaraliyi tasimak son care olmalidir — yangın, sızıntı veya hemen baska tehlike yoksa tasima. Tasinacaksa: 1) Once durumu degerlendir, omurga/boyun yaralanmasi süphesi varsa düzlemde tut. 2) Tek kişiyle: omuzdan tutarak surukle (basını koruyarak) veya kollarini yarali boyna gecirip kursuk pozisyonunda kaldir. 3) Iki kişiyle: bir kişi başı/boynu sabitler, diger kişi ayaklardan tutar — birlikte yatay tasıma. 4) Üç-dort kisiyle (en güvenli): bir kişi başını ve omuzları, ikinci kişi belden, üçüncü kişi bacaklardan — hep birlikte ayni hizada kaldırılır. 5) Sertanlik (omurga koruma): bir kapı, masa üstü gibi sert düz bir yüzeye yatırarak tasi. Yaraliyi koltuğa oturtma, sirtinda taşıma — omurga riski varsa kesin yasak. Çocuklar daha hafif ama daha kırılgan — fazla dikkat.",
+      "embedding": []
+    },
+    {
+      "id": "pfa_01",
+      "source": "WHO - PFA Pocket Guide",
+      "category": "psikolojik_ilk_yardim",
+      "title": "PFA Nedir Ne Degildir",
+      "text": "Psikolojik Ilk Yardim (PFA) afet ve travmadan sonra etkilenen kişilere verilen ilk insani destektir. PFA olan: dinlemek, guvenli ortam saglamak, somut ihtiyacları (yiyecek, su, bilgi) karşilamak, sosyal destege baglamak. PFA olmayan: profesyonel psikolojik terapi (bunu eğitimli uzmanlar yapar), olanları anlatmaya zorlamak ('debriefing'), tanı koymak, ilac vermek, 'her şey güzel olacak' demek (bos vaat), ne yaşadığını sorgulamak. PFA'nın ilkesi: 'Önce zarar verme'. Insanlara konuşmak için baski yapma, ama dinlemeye hazirsindan emin ol. Kendi sınırlarına saygi göster — sen de zor durumdaysın, bir başkasını destekleyemezsin. Eğitimli olmasan bile PFA yapabilirsin: önemli olan empati ve sabir.",
+      "embedding": []
+    },
+    {
+      "id": "pfa_02",
+      "source": "WHO - PFA Pocket Guide",
+      "category": "psikolojik_ilk_yardim",
+      "title": "Bak Dinle Yonlendir",
+      "text": "PFA üç prensibe dayanır: BAK, DINLE, YONLENDIR. BAK: önce kendinizin güvende olduğundan emin olun. Sonra ortamı tarayın — kim yardıma ihtiyaç duyuyor, kim ciddi yaralı, kim ağlıyor, kim donmus duruyor, kim panik halinde. Acil tıbbi ihtiyaç olanlara öncelik. DINLE: yanına yaklaş, kendini tanıt, ihtiyaclarini sor. Hızlı sorulardan kaçın — sadece 'şu an ne hissediyorsun?' veya 'sana nasıl yardım edebilirim?' Sessizliğe izin ver. Kişi konusmak istemiyorsa zorlama, yanında kal. Konuşuyorsa kesintisiz dinle, kendi hikayeni anlatma. YONLENDIR: somut ihtiyaclarini karşıla — su, battaniye, telefon kullanmasi, ailesi ile ilettime gecmesi. Daha sonra uzman desteğine yönlendir (psikolog, sosyal hizmet).",
+      "embedding": []
+    },
+    {
+      "id": "pfa_03",
+      "source": "Kizilay - Nefes Egzersizi",
+      "category": "psikolojik_ilk_yardim",
+      "title": "4-7-8 Nefes Tekniği",
+      "text": "Panik anında otonom sinir sistemi sempatik moda geçer — kalp hızlı, nefes yüzeysel, kaslar gerilir. 4-7-8 nefes tekniği parasempatik sistemi (sakinlik) aktive eder. Yontem: 1) Rahat bir pozisyon al, dilini üst dişlerin arkasındaki damak bölgesine koy. 2) Tüm havayı agzından 'fff' sesi çıkararak ver. 3) Agzini kapat, 4 saniye burnundan sessizce nefes al. 4) 7 saniye nefesini tut. 5) 8 saniye 'fff' sesi çıkararak agzından ver. Bu bir tur. 4-5 tur yap. Klinik çalışmalar bu tekniğin sadece 2-3 dakikada kalp hızını ortalama 10 atım düşürdüğünü göstermiştir. Yalnız yapamıyorsan rehberli versiyonu kullan — büyüyen-küçülen daire animasyonu nefes ritmini takip ettirir.",
+      "embedding": []
+    },
+    {
+      "id": "pfa_04",
+      "source": "Saglik Bakanligi - Panik Atak",
+      "category": "psikolojik_ilk_yardim",
+      "title": "Panik Atak Belirtileri ve Mudahale",
+      "text": "Panik atak afet sonrasi çok sık görülür ve normaldir, hayati tehlikesi yoktur ama korkutucudur. Belirtileri: kalp çarpıntısı, terleme, titreme, nefes daralmasi, boğulma hissi, göğüs ağrısı, mide bulantısı, baş dönmesi, gerçekdışılık hissi, sıcak basması veya üşüme, karıncalanma, ölme korkusu, çıldırma korkusu. Genelde 5-20 dakikada zirveye ulaşır ve geçer. Birinde panik atak görursen: sakin sesle 'panik atak yaşıyorsun, bu geçecek' de. Yanında kal. Onunla yavas nefes al — kendi nefesin yavaşlarsa karsıdaki taklit eder. Sıkı bir cisim ver (su şişesi, anahtar) — gerçekliği hatırlatır. Açık alana çıkar, su iç. 'Korkmana gerek yok' deme — yargılayıcıdır. 'Burdayım, geçecek' de. Sık tekrarlıyorsa uzman desteği şart.",
+      "embedding": []
+    },
+    {
+      "id": "pfa_05",
+      "source": "Kizilay - Cocukla PFA",
+      "category": "psikolojik_ilk_yardim",
+      "title": "Cocukla Afet Sonrasi Konusmak",
+      "text": "Çocuklar afet sonrası çok farklı tepkiler verir — bazıları konuşmaz, bazıları sürekli sorar, bazıları regrese olur (alt ıslatma, baş parmak emme). Hepsi normaldir. Yaklasım: 1) Yaşına uygun, dürüst konuş ('deprem oldu, biraz çok sallandı, biz şu anda güvendeyiz'). 2) Detaya girme — sadece bilmek istediği kadarını anlat, yetmiyorsa devam et. 3) Yalan söyleme ('bir daha olmayacak' deme — olabilir). 4) Korkmasını yargılama — 'korkmana gerek yok' deme, 'evet, korkutucuydu, ben de korktum' de. 5) Rutinleri koru — yemek saatleri, uyku ritueli, çocuğun normal yaşam hissi için. 6) Fiziksel temas çok önemli — sarıl, elini tut. 7) Çizim, oyun ile dinleme — çocuklar konuşmadan duygularini ifade eder. 8) 1 aydan uzun süren ciddi davranış değişiklikleri (yeme bozukluğu, uyku, agresyon) varsa uzman.",
+      "embedding": []
+    },
+    {
+      "id": "pfa_06",
+      "source": "WHO - Yas Surec",
+      "category": "psikolojik_ilk_yardim",
+      "title": "Yas Sureci ve Normal Tepkiler",
+      "text": "Yas, yakın kaybından sonra her insanın geçtiği doğal süreçtir. Beş aşama (Kübler-Ross) sıralı değil, döngüsel olabilir: 1) Inkar — 'bu olmuyor, yanlıştır' hissi. 2) Öfke — 'neden bana?', 'bu kimin suçu?' duygusu, çoğu zaman yakına veya kurtarıcılara yöneltilir. 3) Pazarlık — 'eğer şunu yapsaydım, olmazdı', 'şu anlaşmayı yaparsam geri gelir mi?' duşunceleri. 4) Depresyon — derin uzuntu, halsizlik, ilgi kaybi. 5) Kabul — yenı normal'i kabullenme, anının huzurla anılma. Yas süresi kişiye göre değişir, 6 ay – 2 yıl tipiktir. Komplikasyon belirtileri (uzman gerekiyor): 6 aydan sonra hala günlük işlevsel kaybı, ağır intihar düşünceleri, alkol/madde bağımlılığı, halüsinasyonlar. 'Yas zamanla geçer' deme, 'yas zamanla taşınabilir hale gelir' de.",
+      "embedding": []
+    },
+    {
+      "id": "pfa_07",
+      "source": "AKUT - Kurtarici Psikolojisi",
+      "category": "psikolojik_ilk_yardim",
+      "title": "Kurtarici Mental Saglik",
+      "text": "Arama-kurtarma calisanlari yuksek travma yuku altinda calisirlar — sekonder travmatik stres riski yuksektir. Belirtiler: uyku bozukluğu, flashback, sürekli yorgunluk, ilgi kaybı, irritabilite, alkol/sigara artışı, ailesinden uzaklaşma. Onlem: 1) Her vardiya sonrası 'debriefing' degil 'kontrol etme' — takım arkadasına nasil hissettigini sor. 2) Düzenli yemek, su, uyku — çok zor ama 6 saat uyku 0 saatten cok daha iyi calistirir. 3) Tek başına calisma — partner sistemi. 4) Görev sirasinda hata yapmak normaldir — kendini suclamayı sınırla. 5) Olay sonrasi 2-4 hafta icinde uzmana git, gerek olmasa bile. 6) Aile/sevdiklere zaman ayır, dilcgi olarak konus. 7) Yardım istemek zayıflık degildir. Olum tehlikesi yaşamış kurtarıcılarda PTSD oranı %15-20.",
+      "embedding": []
+    },
+    {
+      "id": "lojistik_01",
+      "source": "AFAD - Toplanma Alanlari",
+      "category": "lojistik",
+      "title": "Toplanma Alanina Gitmek",
+      "text": "Deprem sonrasi toplanma alani, AFAD ve belediyelerce belirlenmis acik guvenli alanlardir (genellikle parklar, okul bahceleri, stadyumlar). Toplanma alanina gitmeden once: 1) Kendi guvenligini kontrol et — yaralanma var mi, hareket edebilir misin? 2) Aile uyelerini topla (bulusma plani uygulanir). 3) Deprem cantasini al. 4) Gaz/elektrik vanalarini kapat. 5) Mumkunse evi kilitle. 6) Kacik artiklari, dukulen elektrik kablolarini uzak dur. 7) Asansor kullanma, merdivenleri dikkatli kullan. 8) Yol uzerinde yaralilarla karsılaşırsan basit ilk yardim yap ama uzun kalma. 9) Toplanma alanina vardiginda gorevlilere kayit ol — kaybolan veya bulunmus aile uyelerini soyle. 10) Yiyecek ve su dagitimi noktalarini takip et. Toplanma alaninda en az 24-48 saat kalman gerekebilir.",
+      "embedding": []
+    },
+    {
+      "id": "lojistik_02",
+      "source": "AFAD - Aile Birlestirme",
+      "category": "lojistik",
+      "title": "Aile Birlestirme Noktalari",
+      "text": "Deprem sonrasi kayip yakinlarini bulmak icin sistemli yapilar vardir: 1) AFAD Aile Birlestirme Noktasi — buyuk toplanma alanlarinda kurulu, kaybedilen ve bulunan kisileri kayit altina alir, eşleştirme yapar. 2) Kızılay 'Aileyi Bul' hattı — 168 nolu numara. 3) Hastane kayitlari — buyuk hastanelere yatan yaralilarin listesi gunluk yenilenir, AFAD koordinasyonu uzerinden ulasilir. 4) Sosyal medya — #DepremdeKayip, #SesVer hashtagleri kullanilir. 5) AFAD AFAD-ESKI sistemi — internet uzerinden de aranabilir kayit. Kaybedilen kisi icin bilgi: tam ad, dogum tarihi, son gorulen yer ve zaman, ust bilgisi (kiyafet, fiziksel ozellikler, isaretler), saglik durumu. Mumkunse fotograf da ver. Kaybedildikten sonra ilk 72 saat hayatta kalma olasiligi en yuksek — bu surede hizli kayit cok önemli.",
+      "embedding": []
+    },
+    {
+      "id": "hijyen_01",
+      "source": "WHO - Afet Sonrasi Hijyen",
+      "category": "saglik",
+      "title": "Afet Sonrasi Hijyen Onlemleri",
+      "text": "Afet sonrası salgın hastalıklar ikinci dalga ölümlerin en buyuk sebebidir. Önlemler: 1) Su — yalnızca paketli, kaynatılmış (en az 1 dakika) veya klorlu su iç. Musluk suyu, kuyu suyu, derin sular kirli olabilir. 2) El hijyeni — sabunla 20 saniye yıka, mümkünse alkol bazlı el dezenfektanı kullan. Özellikle yemek öncesi, tuvalet sonrası. 3) Yiyecek — paketli olmayan, açıkta beklemiş yiyecek yeme. Çiğ et, çiğ deniz ürünleri tehlikeli. 4) Tuvalet — toplanma alanı tuvaletlerine geç, ortak değil tek kullanım, sonra el yıka. Açıkta defekasyondan kaçın. 5) Atık — yiyecek atıkları kapatılmış torbalarda, açıkta bırakma — fare ve sineklere davet. 6) Kişisel hijyen — günlük el yüz yıkama, dis fırçalama, mümkünse vücut silimi. 7) Yara — temiz tutup günlük kontrol, kızarıklık-şiş varsa hemen sağlık birimine.",
+      "embedding": []
+    }
+  ]
+}
