@@ -1,69 +1,90 @@
-// Durum yönetimi ve sohbet mantığını içeren chat_controller.dart dosyası
+// Bu controller, chat ekranının anlık durumunu (mesaj listesi, yüklenme durumu) yönetir
+// ve kullanıcının mesajlarını RAG destekli AI servisine ileterek ekranı günceller.
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// AI Servisimizi import ediyoruz
 import '../../../core/services/ai_services.dart';
 
-// Mesaj Modelimiz
+// Tek bir mesajın yapısını tutan model
 class ChatMessage {
   final String text;
   final bool isUser;
-  ChatMessage({required this.text, required this.isUser});
+  final DateTime timestamp;
+
+  ChatMessage({
+    required this.text,
+    required this.isUser,
+    required this.timestamp,
+  });
 }
 
-// Ekranın Durumu (Mesaj listesi ve Yükleniyor durumu)
+// Ekranın o anki durumunu (State) tutan model
 class ChatState {
   final List<ChatMessage> messages;
   final bool isLoading;
-  ChatState({required this.messages, this.isLoading = false});
+
+  ChatState({
+    required this.messages,
+    required this.isLoading,
+  });
+
+  ChatState copyWith({
+    List<ChatMessage>? messages,
+    bool? isLoading,
+  }) {
+    return ChatState(
+      messages: messages ?? this.messages,
+      isLoading: isLoading ?? this.isLoading,
+    );
+  }
 }
 
-// Riverpod Provider'ımız
-final chatControllerProvider = StateNotifierProvider<ChatController, ChatState>(
-  (ref) {
-    return ChatController(ref.read(aiServiceProvider));
-  },
-);
+// Controller'ı dışarıya açan Provider
+final chatControllerProvider = StateNotifierProvider<ChatController, ChatState>((ref) {
+  final aiService = ref.watch(aiServiceProvider);
+  return ChatController(aiService);
+});
 
 class ChatController extends StateNotifier<ChatState> {
   final AIService _aiService;
 
-  ChatController(this._aiService)
-    : super(
-        ChatState(
-          messages: [
-            // İlk açılışta AI'ın atacağı karşılama mesajı
-            ChatMessage(
-              text:
-                  "Merhaba. İnternet bağlantısı olmadan da yanındayım. AFAD ve Kızılay verileriyle sana yardım etmeye hazırım. Ne öğrenmek istersin?",
-              isUser: false,
-            ),
-          ],
-        ),
-      );
+  ChatController(this._aiService) : super(ChatState(messages: [], isLoading: false)) {
+    // Modelin ilk açılışta hazır olması için tetikliyoruz
+    _initModel();
+  }
 
+  Future<void> _initModel() async {
+    await _aiService.initModel();
+  }
+
+  // Kullanıcı mesaj gönderdiğinde veya çiplere tıkladığında çalışan fonksiyon
   Future<void> sendMessage(String text) async {
     if (text.trim().isEmpty) return;
 
-    // 1. Kullanıcı mesajını ekle ve yükleniyor durumuna geç
-    state = ChatState(
-      messages: [
-        ...state.messages,
-        ChatMessage(text: text, isUser: true),
-      ],
+    final userMessage = ChatMessage(
+      text: text,
+      isUser: true,
+      timestamp: DateTime.now(),
+    );
+
+    // Kullanıcının mesajını ekrana hemen ekle ve yükleniyor durumuna geç
+    state = state.copyWith(
+      messages: [...state.messages, userMessage],
       isLoading: true,
     );
 
-    // 2. RAG destekli AI'dan yanıt al
-    final response = await _aiService.generateResponse(text);
+    // Yapay zekadan RAG destekli cevabı bekle
+    final aiResponseText = await _aiService.answerQuestion(text);
 
-    // 3. AI yanıtını ekle ve yükleniyor durumunu bitir
-    state = ChatState(
-      messages: [
-        ...state.messages,
-        ChatMessage(text: response, isUser: false),
-      ],
+    final aiMessage = ChatMessage(
+      text: aiResponseText,
+      isUser: false,
+      timestamp: DateTime.now(),
+    );
+
+    // Cevap geldiğinde yükleniyor durumunu kapat ve cevabı ekrana bas
+    state = state.copyWith(
+      messages: [...state.messages, aiMessage],
       isLoading: false,
     );
   }

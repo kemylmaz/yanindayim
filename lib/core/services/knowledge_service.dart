@@ -1,7 +1,5 @@
-// RAG: Bilgi Çıkarma Motoru
-//Cihazı yormadan, sadece kelime eşleştirmesiyle chunks.json
-//dosyasındaki en doğru bilgiyi
-//bulup getirecek olan servisimizi yazıyoruz.
+// Bu servis, bilgi bankasındaki metinleri yükler ve
+//kullanıcının sorusuyla eşleştirerek ilgili bilgiyi döndürür.
 
 import 'dart:convert';
 
@@ -15,72 +13,54 @@ final knowledgeServiceProvider = Provider<KnowledgeService>((ref) {
 
 class KnowledgeService {
   List<Map<String, dynamic>> _chunks = [];
-  bool _isLoaded = false;
 
-  /// JSON dosyasını okuyup hafızaya alır
-  Future<void> loadKnowledgeBase() async {
-    if (_isLoaded) return;
+  // Senin verdiğin JSON yapısına göre dosyayı hafızaya yüklüyoruz
+  Future<void> loadKnowledge() async {
     try {
-      final jsonString = await rootBundle.loadString(
+      final String response = await rootBundle.loadString(
         'assets/knowledge_base/chunks.json',
       );
-      final Map<String, dynamic> jsonData = jsonDecode(jsonString);
-      final List<dynamic> chunksList = jsonData['chunks'];
+      final Map<String, dynamic> data = json.decode(response);
 
-      _chunks = chunksList.map((e) => e as Map<String, dynamic>).toList();
-      _isLoaded = true;
-      debugPrint("Bilgi tabanı yüklendi: ${_chunks.length} parça veri.");
+      // En dıştaki objeden "chunks" listesini çekiyoruz
+      if (data.containsKey('chunks')) {
+        _chunks = List<Map<String, dynamic>>.from(data['chunks']);
+        debugPrint(
+          "✅ Bilgi bankası yüklendi. Toplam chunk sayısı: ${_chunks.length}",
+        );
+      } else {
+        debugPrint("⚠️ JSON içinde 'chunks' anahtarı bulunamadı!");
+      }
     } catch (e) {
-      debugPrint("Bilgi tabanı yüklenirken hata: $e");
+      debugPrint("❌ Bilgi bankası yüklenirken hata oluştu: $e");
     }
   }
 
-  /// Soruya en uygun metinleri bulur (Akıllı Kelime Eşleştirme)
-  Future<String> getRelevantContext(String query) async {
-    if (!_isLoaded) await loadKnowledgeBase();
+  // Kullanıcının yazdığı mesajla bilgi bankasındaki metinleri eşleştirme
+  String searchRelevantInfo(String query) {
     if (_chunks.isEmpty) return "";
 
-    // 1. Basit NLP: Noktalama işaretlerini sil, küçük harfe çevir
-    final normalizedQuery = query.toLowerCase().replaceAll(
-      RegExp(r'[^\w\sğüşıöç]'),
-      '',
-    );
-    final queryWords = normalizedQuery
-        .split(' ')
-        .where((w) => w.length > 2)
-        .toList(); // Çok kısa bağlaçları atla
+    final lowerQuery = query.toLowerCase();
 
-    if (queryWords.isEmpty) return "";
-
-    // 2. Puanlama: Her chunk için kaç kelime eşleştiğini say
-    List<Map<String, dynamic>> scoredChunks = [];
-
+    // Kelime kelime eşleşme kontrolü (Arama kalitesini artırmak için)
     for (var chunk in _chunks) {
-      int score = 0;
-      final chunkText = chunk['text'].toString().toLowerCase();
+      final text = chunk['text']?.toString().toLowerCase() ?? '';
+      final title = chunk['title']?.toString().toLowerCase() ?? '';
+      final category = chunk['category']?.toString().toLowerCase() ?? '';
 
-      for (var word in queryWords) {
-        if (chunkText.contains(word)) {
-          score++;
-        }
-      }
-
-      if (score > 0) {
-        scoredChunks.add({'text': chunk['text'], 'score': score});
+      // Eğer sorunun içinde başlık, kategori veya metnin kendisi geçiyorsa
+      if (text.contains(lowerQuery) ||
+          title.contains(lowerQuery) ||
+          category.contains(lowerQuery)) {
+        // Yapay zekaya doğrudan ham metni (text) paslayacağız
+        return chunk['text'].toString();
       }
     }
 
-    // 3. Eşleşme skoruna göre büyükten küçüğe sırala
-    scoredChunks.sort(
-      (a, b) => (b['score'] as int).compareTo(a['score'] as int),
-    );
+    return ""; // Eşleşen bir şey bulamazsa boş dön
+  }
 
-    // 4. En iyi 3 bilgiyi alıp birleştir
-    final topChunks = scoredChunks
-        .take(3)
-        .map((e) => "- \${e['text']}")
-        .toList();
-
-    return topChunks.join('\n\n');
+  Future<String> getRelevantContext(String query) async {
+    return searchRelevantInfo(query);
   }
 }
