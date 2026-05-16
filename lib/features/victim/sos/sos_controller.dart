@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/audio_service.dart';
+import '../../../core/services/emergency_service.dart';
 
 enum SosPhase { countdown, active, stopped }
 
@@ -47,11 +48,12 @@ class SosState {
 }
 
 class SosController extends StateNotifier<SosState> {
-  SosController(this._audio) : super(const SosState()) {
+  SosController(this._audio, this._emergency) : super(const SosState()) {
     _tickEverySecond();
   }
 
   final AudioService _audio;
+  final EmergencyService _emergency;
   Timer? _timer;
 
   void _tickEverySecond() {
@@ -89,14 +91,21 @@ class SosController extends StateNotifier<SosState> {
     final next = state.activeElapsed + 1;
     var milestones = state.milestones;
 
-    // 60 saniye dolduğunda SMS gönder + 112 ara (simüle).
+    // 60 saniye dolduğunda gerçek SMS ve 112 intent'leri tetikle.
     if (next == SosState.activeTotal) {
+      // TODO(prod): SharedPreferences'tan kayitli acil kisiler + konum okunur.
+      // Hackathon demosu icin sabit placeholder veriler.
+      unawaited(_emergency.triggerSos(
+        emergencyContacts: const <String>['+905551234567'],
+        lastLat: 41.0117,
+        lastLng: 28.9810,
+        userName: 'Kemal',
+      ));
       milestones = {
         ...milestones,
         SosMilestone.smsSent,
         SosMilestone.emergencyCalled,
       };
-      // TODO(production): url_launcher ile sms: ve tel:112 intent açılır.
     }
 
     state = state.copyWith(
@@ -122,5 +131,5 @@ class SosController extends StateNotifier<SosState> {
 
 final sosControllerProvider =
     StateNotifierProvider.autoDispose<SosController, SosState>((ref) {
-  return SosController(AudioService.instance);
+  return SosController(AudioService.instance, EmergencyService.instance);
 });

@@ -3,14 +3,12 @@ enum UserMode {
   rescuer;
 
   String get displayName => switch (this) {
-        UserMode.victim => 'Mağdur',
-        UserMode.rescuer => 'Kurtarıcı',
+        UserMode.victim => 'Depremzede',
+        UserMode.rescuer => 'Destek ve Kurtarma',
       };
 
   String get description => switch (this) {
-        UserMode.victim =>
-          'Deprem anında ve sonrasında size yardım eder. SOS, beacon yayını, AI rehber ve PFA modu.',
-        UserMode.rescuer =>
-          'Yaralılara ulaşmak için tarama yapar. Mağdurları haritada görürsünüz.',
+        UserMode.victim => 'Yardıma ihtiyacım var',
+        UserMode.rescuer => 'Yardım etmek istiyorum',
       };
 }
