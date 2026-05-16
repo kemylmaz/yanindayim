@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
@@ -17,86 +19,56 @@ class ModeSelectionScreen extends StatelessWidget {
       body: Stack(
         children: [
           const _BackgroundGradient(),
-          const _AnimatedPulses(),
-          const _BottomBlob(),
+          const _OrbitingBlobs(),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(
-                    flex: 5,
                     child: Center(child: _Hero()),
                   ),
-                  Expanded(
-                    flex: 6,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 4, bottom: 16),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 28,
-                                height: 2,
-                                color: AppColors.primary,
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                'BAŞLAYALIM',
-                                style: AppTypography.labelSmall.copyWith(
-                                  color: AppColors.primaryDeep,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 1.5,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ).animate(delay: 300.ms).fadeIn(duration: 400.ms),
-                        Text(
-                          'Hangi roldesin?',
-                          style: AppTypography.headlineLarge.copyWith(
-                            color: AppColors.primaryDeep,
-                          ),
-                        ).animate(delay: 350.ms).fadeIn(duration: 400.ms),
-                        const SizedBox(height: 18),
-                        _ActionTile(
-                          mode: UserMode.victim,
-                          color: AppColors.primary,
-                          colorSoft: AppColors.primarySoft,
-                          icon: Icons.shield_rounded,
-                          subtitle: 'Deprem anında yanındayım',
-                          onTap: () => onModeSelected?.call(UserMode.victim),
-                        ).animate(delay: 450.ms).fadeIn(duration: 500.ms).moveX(
-                              begin: -16,
-                              end: 0,
-                              duration: 500.ms,
-                              curve: Curves.easeOutCubic,
-                            ),
-                        const SizedBox(height: 14),
-                        _ActionTile(
-                          mode: UserMode.rescuer,
-                          color: AppColors.rescuer,
-                          colorSoft: AppColors.rescuerLight,
-                          icon: Icons.medical_services_rounded,
-                          subtitle: 'Yaralılara ulaşmaya geldim',
-                          onTap: () => onModeSelected?.call(UserMode.rescuer),
-                        ).animate(delay: 600.ms).fadeIn(duration: 500.ms).moveX(
-                              begin: -16,
-                              end: 0,
-                              duration: 500.ms,
-                              curve: Curves.easeOutCubic,
-                            ),
-                      ],
-                    ),
-                  ),
+                  const SizedBox(height: 8),
+                  _SwipeTile(
+                    mode: UserMode.victim,
+                    direction: SwipeDirection.right,
+                    icon: Icons.front_hand_rounded,
+                    background: AppColors.primary,
+                    foreground: AppColors.textOnPrimary,
+                    handleBackground: AppColors.textOnPrimary,
+                    handleForeground: AppColors.primaryDeep,
+                    onConfirmed: () =>
+                        onModeSelected?.call(UserMode.victim),
+                  ).animate(delay: 350.ms).fadeIn(duration: 500.ms).moveY(
+                        begin: 16,
+                        end: 0,
+                        duration: 500.ms,
+                        curve: Curves.easeOutCubic,
+                      ),
+                  const SizedBox(height: 18),
+                  _SwipeTile(
+                    mode: UserMode.rescuer,
+                    direction: SwipeDirection.left,
+                    icon: Icons.medical_services_rounded,
+                    background: AppColors.surface,
+                    foreground: AppColors.primaryDeep,
+                    handleBackground: AppColors.primary,
+                    handleForeground: AppColors.textOnPrimary,
+                    onConfirmed: () =>
+                        onModeSelected?.call(UserMode.rescuer),
+                  ).animate(delay: 500.ms).fadeIn(duration: 500.ms).moveY(
+                        begin: 16,
+                        end: 0,
+                        duration: 500.ms,
+                        curve: Curves.easeOutCubic,
+                      ),
+                  const SizedBox(height: 16),
                   Text(
                     'Verileriniz sadece bu cihazda kalır.',
                     textAlign: TextAlign.center,
                     style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                      color: AppColors.primaryDeep.withValues(alpha: 0.65),
                     ),
                   ).animate(delay: 800.ms).fadeIn(duration: 400.ms),
                   const SizedBox(height: 4),
@@ -128,7 +100,7 @@ class _BackgroundGradient extends StatelessWidget {
               AppColors.background,
               AppColors.backgroundBottom,
             ],
-            stops: [0.0, 0.55, 1.0],
+            stops: [0.0, 0.5, 1.0],
           ),
         ),
       ),
@@ -136,38 +108,16 @@ class _BackgroundGradient extends StatelessWidget {
   }
 }
 
-class _BottomBlob extends StatelessWidget {
-  const _BottomBlob();
+/// Tüm sayfayı kaplayan, yavaş yörünge çizen blob animasyonu.
+/// Eye-friendly: düşük alpha + yavaş hareket (30 saniyelik döngü).
+class _OrbitingBlobs extends StatefulWidget {
+  const _OrbitingBlobs();
 
   @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      bottom: -100,
-      left: -80,
-      child: IgnorePointer(
-        child: Container(
-          width: 240,
-          height: 240,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColors.primarySurface.withValues(alpha: 0.65),
-          ),
-        ),
-      ),
-    );
-  }
+  State<_OrbitingBlobs> createState() => _OrbitingBlobsState();
 }
 
-/// Sağ üstten yayılan seismic-wave benzeri pulse halkaları.
-/// Sürekli loop, sahnenin ritmini canlandırır ama dikkat dağıtmaz.
-class _AnimatedPulses extends StatefulWidget {
-  const _AnimatedPulses();
-
-  @override
-  State<_AnimatedPulses> createState() => _AnimatedPulsesState();
-}
-
-class _AnimatedPulsesState extends State<_AnimatedPulses>
+class _OrbitingBlobsState extends State<_OrbitingBlobs>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
@@ -176,7 +126,7 @@ class _AnimatedPulsesState extends State<_AnimatedPulses>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 6),
+      duration: const Duration(seconds: 30),
     )..repeat();
   }
 
@@ -190,64 +140,107 @@ class _AnimatedPulsesState extends State<_AnimatedPulses>
   Widget build(BuildContext context) {
     return Positioned.fill(
       child: IgnorePointer(
-        child: AnimatedBuilder(
-          animation: _controller,
-          builder: (context, _) {
-            return CustomPaint(
-              painter: _PulsePainter(progress: _controller.value),
-              size: Size.infinite,
-            );
-          },
+        child: RepaintBoundary(
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, _) {
+              return CustomPaint(
+                painter: _OrbitPainter(progress: _controller.value),
+                size: Size.infinite,
+              );
+            },
+          ),
         ),
       ),
     );
   }
 }
 
-class _PulsePainter extends CustomPainter {
-  _PulsePainter({required this.progress});
+class _OrbitPainter extends CustomPainter {
+  _OrbitPainter({required this.progress});
 
   final double progress;
 
-  static const _ringCount = 4;
-  static const _maxAlpha = 0.32;
+  /// Her blob bir orbit parametre seti içerir:
+  /// (radiusFactor, sizeFactor, phase, color, alpha)
+  static const _orbits = <_Orbit>[
+    _Orbit(
+      radiusFactor: 0.42,
+      sizeFactor: 0.30,
+      phaseOffset: 0.0,
+      color: Color(0xFFFFFFFF),
+      alpha: 0.10,
+    ),
+    _Orbit(
+      radiusFactor: 0.55,
+      sizeFactor: 0.22,
+      phaseOffset: 0.33,
+      color: Color(0xFF7DD896),
+      alpha: 0.18,
+    ),
+    _Orbit(
+      radiusFactor: 0.35,
+      sizeFactor: 0.18,
+      phaseOffset: 0.66,
+      color: Color(0xFFFFFFFF),
+      alpha: 0.08,
+    ),
+    _Orbit(
+      radiusFactor: 0.62,
+      sizeFactor: 0.26,
+      phaseOffset: 0.20,
+      color: Color(0xFF42B468),
+      alpha: 0.14,
+    ),
+    _Orbit(
+      radiusFactor: 0.48,
+      sizeFactor: 0.16,
+      phaseOffset: 0.78,
+      color: Color(0xFFFFFFFF),
+      alpha: 0.07,
+    ),
+  ];
 
   @override
   void paint(Canvas canvas, Size size) {
-    final origin = Offset(size.width * 1.05, size.height * 0.04);
-    final maxRadius = size.width * 0.95;
+    final center = Offset(size.width / 2, size.height / 2);
+    final maxDim = math.max(size.width, size.height);
 
-    for (var i = 0; i < _ringCount; i++) {
-      final phase = (progress + i / _ringCount) % 1.0;
-      final radius = phase * maxRadius;
-      if (radius < 4) continue;
-
-      final fade = 1.0 - phase;
-      final alpha = _maxAlpha * fade * fade;
-
-      final color = i.isEven ? AppColors.primary : AppColors.amber;
+    for (final orbit in _orbits) {
+      final angle = (progress + orbit.phaseOffset) * 2 * math.pi;
+      final radius = maxDim * orbit.radiusFactor;
+      final blobCenter = Offset(
+        center.dx + math.cos(angle) * radius,
+        center.dy + math.sin(angle) * radius,
+      );
 
       canvas.drawCircle(
-        origin,
-        radius,
-        Paint()
-          ..color = color.withValues(alpha: alpha)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.8,
+        blobCenter,
+        maxDim * orbit.sizeFactor,
+        Paint()..color = orbit.color.withValues(alpha: orbit.alpha),
       );
     }
-
-    // Anchor dot at origin (slight glow)
-    canvas.drawCircle(
-      origin,
-      6,
-      Paint()..color = AppColors.primary.withValues(alpha: 0.22),
-    );
   }
 
   @override
-  bool shouldRepaint(covariant _PulsePainter oldDelegate) =>
+  bool shouldRepaint(covariant _OrbitPainter oldDelegate) =>
       oldDelegate.progress != progress;
+}
+
+class _Orbit {
+  const _Orbit({
+    required this.radiusFactor,
+    required this.sizeFactor,
+    required this.phaseOffset,
+    required this.color,
+    required this.alpha,
+  });
+
+  final double radiusFactor;
+  final double sizeFactor;
+  final double phaseOffset;
+  final Color color;
+  final double alpha;
 }
 
 // ──────────────────────────────── hero ──────────────────────────────────────
@@ -258,31 +251,32 @@ class _Hero extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        // 2× bigger logo (eski 110px → 220px)
         SizedBox(
-          width: 110,
-          height: 110,
+          width: 220,
+          height: 220,
           child: Stack(
             alignment: Alignment.center,
             children: [
               Container(
-                width: 110,
-                height: 110,
+                width: 220,
+                height: 220,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primaryLight.withValues(alpha: 0.35),
+                  color: AppColors.textOnPrimary.withValues(alpha: 0.18),
                 ),
               ),
               Container(
-                width: 86,
-                height: 86,
+                width: 172,
+                height: 172,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primarySoft.withValues(alpha: 0.7),
+                  color: AppColors.textOnPrimary.withValues(alpha: 0.32),
                 ),
               ),
               Container(
-                width: 62,
-                height: 62,
+                width: 132,
+                height: 132,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
@@ -290,15 +284,24 @@ class _Hero extends StatelessWidget {
                     colors: [AppColors.primary, AppColors.primaryDeep],
                   ),
                   shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppColors.textOnPrimary.withValues(alpha: 0.25),
+                    width: 2.5,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primaryDeep.withValues(alpha: 0.4),
-                      blurRadius: 18,
-                      offset: const Offset(0, 8),
+                      color: AppColors.primaryDeep.withValues(alpha: 0.45),
+                      blurRadius: 28,
+                      offset: const Offset(0, 14),
+                    ),
+                    BoxShadow(
+                      color: AppColors.textOnPrimary.withValues(alpha: 0.25),
+                      blurRadius: 10,
+                      offset: const Offset(-4, -4),
                     ),
                   ],
                 ),
-                child: const _YMonogram(size: 32),
+                child: const _PremiumLogo(size: 64),
               ),
             ],
           ),
@@ -306,211 +309,316 @@ class _Hero extends StatelessWidget {
             .animate()
             .fadeIn(duration: 600.ms)
             .scale(
-              begin: const Offset(0.8, 0.8),
+              begin: const Offset(0.85, 0.85),
               end: const Offset(1.0, 1.0),
               duration: 600.ms,
               curve: Curves.easeOutCubic,
             ),
-        const SizedBox(height: 22),
+        const SizedBox(height: 18),
         Text(
           'Yanında',
           style: AppTypography.displayLarge.copyWith(
             color: AppColors.primaryDeep,
+            fontSize: 56,
             height: 1.0,
+            fontWeight: FontWeight.w800,
           ),
         ).animate(delay: 150.ms).fadeIn(duration: 500.ms),
-        const SizedBox(height: 10),
-        SizedBox(
-          width: 280,
-          child: Text(
-            'Deprem anında ve sonrasında — internet olmadan da.',
-            textAlign: TextAlign.center,
-            style: AppTypography.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ).animate(delay: 250.ms).fadeIn(duration: 500.ms),
       ],
     );
   }
 }
 
-
-// ──────────────────────────────── logo monogram ─────────────────────────────
-
-/// "Y" monogram — Yanında harfi + kollarını açmış bir kişi figürü.
-/// İki kavisli kol = sarmalayan kollar; gövde = dik duruş.
-class _YMonogram extends StatelessWidget {
-  const _YMonogram({this.size = 32});
+class _PremiumLogo extends StatefulWidget {
+  const _PremiumLogo({this.size = 64});
 
   final double size;
 
   @override
+  State<_PremiumLogo> createState() => _PremiumLogoState();
+}
+
+class _PremiumLogoState extends State<_PremiumLogo>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1500),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: size,
-      height: size,
-      child: CustomPaint(painter: _YMonogramPainter()),
+    return AnimatedBuilder(
+      animation: _pulse,
+      builder: (context, _) {
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            // Glowing aura
+            Container(
+              width: widget.size * (1.1 + _pulse.value * 0.15),
+              height: widget.size * (1.1 + _pulse.value * 0.15),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.textOnPrimary.withValues(alpha: 0.15),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.textOnPrimary.withValues(
+                      alpha: 0.25 * _pulse.value,
+                    ),
+                    blurRadius: 16,
+                    spreadRadius: 4,
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.volunteer_activism_rounded,
+              size: widget.size * 0.85,
+              color: AppColors.textOnPrimary,
+            ),
+          ],
+        );
+      },
     );
   }
 }
 
-class _YMonogramPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
+// ──────────────────────────────── swipe tile ────────────────────────────────
 
-    final paint = Paint()
-      ..color = AppColors.textOnPrimary
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = w * 0.16
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
+enum SwipeDirection { right, left }
 
-    // Sol kol (kavisli)
-    final leftArm = Path()
-      ..moveTo(w * 0.20, h * 0.20)
-      ..quadraticBezierTo(w * 0.30, h * 0.42, w * 0.5, h * 0.55);
-
-    // Sağ kol (kavisli, simetrik)
-    final rightArm = Path()
-      ..moveTo(w * 0.80, h * 0.20)
-      ..quadraticBezierTo(w * 0.70, h * 0.42, w * 0.5, h * 0.55);
-
-    canvas.drawPath(leftArm, paint);
-    canvas.drawPath(rightArm, paint);
-
-    // Gövde (dikey)
-    canvas.drawLine(
-      Offset(w * 0.5, h * 0.55),
-      Offset(w * 0.5, h * 0.84),
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _YMonogramPainter oldDelegate) => false;
-}
-
-// ──────────────────────────────── action tile ───────────────────────────────
-
-class _ActionTile extends StatefulWidget {
-  const _ActionTile({
+class _SwipeTile extends StatefulWidget {
+  const _SwipeTile({
     required this.mode,
-    required this.color,
-    required this.colorSoft,
+    required this.direction,
     required this.icon,
-    required this.subtitle,
-    required this.onTap,
+    required this.background,
+    required this.foreground,
+    required this.handleBackground,
+    required this.handleForeground,
+    required this.onConfirmed,
   });
 
   final UserMode mode;
-  final Color color;
-  final Color colorSoft;
+  final SwipeDirection direction;
   final IconData icon;
-  final String subtitle;
-  final VoidCallback onTap;
+  final Color background;
+  final Color foreground;
+  final Color handleBackground;
+  final Color handleForeground;
+  final VoidCallback onConfirmed;
 
   @override
-  State<_ActionTile> createState() => _ActionTileState();
+  State<_SwipeTile> createState() => _SwipeTileState();
 }
 
-class _ActionTileState extends State<_ActionTile> {
-  bool _pressed = false;
+class _SwipeTileState extends State<_SwipeTile>
+    with SingleTickerProviderStateMixin {
+  static const double _tileHeight = 142; // Increased to fix bottom overflow
+  static const double _handleSize = 100; // Increased to match new height properly
+  static const double _padding = 8;
+
+  double _drag = 0; // 0..1 (drag progress)
+  bool _confirmed = false;
+
+  late final AnimationController _hintController;
+
+  @override
+  void initState() {
+    super.initState();
+    _hintController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _hintController.dispose();
+    super.dispose();
+  }
+
+  void _onPanUpdate(DragUpdateDetails details, double maxDrag) {
+    if (_confirmed) return;
+    final delta = widget.direction == SwipeDirection.right
+        ? details.delta.dx
+        : -details.delta.dx;
+    setState(() {
+      _drag = ((_drag * maxDrag + delta) / maxDrag).clamp(0.0, 1.0);
+    });
+  }
+
+  void _onPanEnd(DragEndDetails details) {
+    if (_confirmed) return;
+    if (_drag >= 0.75) {
+      setState(() {
+        _drag = 1;
+        _confirmed = true;
+      });
+      Future.delayed(const Duration(milliseconds: 200), widget.onConfirmed);
+    } else {
+      setState(() => _drag = 0);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedScale(
-      scale: _pressed ? 0.98 : 1.0,
-      duration: const Duration(milliseconds: 180),
-      curve: Curves.easeOutCubic,
-      child: GestureDetector(
-        onTapDown: (_) => setState(() => _pressed = true),
-        onTapUp: (_) => setState(() => _pressed = false),
-        onTapCancel: () => setState(() => _pressed = false),
-        onTap: widget.onTap,
-        child: Container(
-          padding: const EdgeInsets.all(18),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final maxDrag = width - _handleSize - _padding * 2;
+        final handleOffset = widget.direction == SwipeDirection.right
+            ? _padding + _drag * maxDrag
+            : width - _handleSize - _padding - _drag * maxDrag;
+
+        return Container(
+          height: _tileHeight,
           decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.border, width: 1),
+            color: widget.background,
+            borderRadius: BorderRadius.circular(28),
+            border: widget.background == AppColors.surface
+                ? Border.all(
+                    color: AppColors.textOnPrimary.withValues(alpha: 0.0),
+                  )
+                : null,
             boxShadow: [
               BoxShadow(
-                color: widget.color.withValues(alpha: 0.10),
+                color: AppColors.shadow,
                 blurRadius: 18,
-                offset: const Offset(0, 6),
+                offset: const Offset(0, 8),
               ),
             ],
           ),
-          child: Row(
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
             children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [widget.colorSoft, widget.color],
+              // Label content
+              Positioned.fill(
+                child: Opacity(
+                  opacity: (1.0 - (_drag * 1.5)).clamp(0.0, 1.0),
+                  child: Padding(
+                  padding: EdgeInsets.only(
+                    left: widget.direction == SwipeDirection.right
+                        ? _handleSize + _padding + 12
+                        : 24,
+                    right: widget.direction == SwipeDirection.left
+                        ? _handleSize + _padding + 12
+                        : 24,
+                    top: 16,
+                    bottom: 16,
                   ),
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: widget.color.withValues(alpha: 0.35),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  widget.icon,
-                  color: AppColors.textOnPrimary,
-                  size: 26,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            widget.icon,
+                            color: widget.foreground,
+                            size: 22,
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              widget.mode.displayName,
+                              style: AppTypography.headlineMedium.copyWith(
+                                color: widget.foreground,
+                                fontWeight: FontWeight.w800,
+                                height: 1.1,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 30),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.mode.description,
+                              style: AppTypography.bodySmall.copyWith(
+                                color: widget.foreground.withValues(alpha: 0.75),
+                                height: 1.2,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              widget.direction == SwipeDirection.right
+                                  ? 'Seçmek için sağa kaydır →'
+                                  : '← Seçmek için sola kaydır',
+                              style: AppTypography.labelSmall.copyWith(
+                                color: widget.foreground.withValues(alpha: 0.55),
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      widget.mode.displayName,
-                      style: AppTypography.headlineMedium.copyWith(
-                        color: AppColors.primaryDeep,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      widget.subtitle,
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 6),
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: widget.color,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.arrow_forward_rounded,
-                  color: AppColors.textOnPrimary,
-                  size: 18,
+            ),
+              // Handle
+              Positioned(
+                left: handleOffset,
+                top: (_tileHeight - _handleSize) / 2,
+                child: GestureDetector(
+                  onPanUpdate: (d) => _onPanUpdate(d, maxDrag),
+                  onPanEnd: _onPanEnd,
+                  child: AnimatedBuilder(
+                    animation: _hintController,
+                    builder: (context, _) {
+                      final hintScale = _drag == 0
+                          ? 1.0 + math.sin(_hintController.value * 2 * math.pi) * 0.03
+                          : 1.0;
+                      return Transform.scale(
+                        scale: hintScale,
+                        child: Container(
+                          width: _handleSize,
+                          height: _handleSize,
+                          decoration: BoxDecoration(
+                            color: widget.handleBackground,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.shadowStrong,
+                                blurRadius: 12,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            widget.direction == SwipeDirection.right
+                                ? Icons.arrow_forward_rounded
+                                : Icons.arrow_back_rounded,
+                            color: widget.handleForeground,
+                            size: 34,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

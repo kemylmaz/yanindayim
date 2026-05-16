@@ -354,6 +354,286 @@
         "facilities": ["su"],
         "isOfficial": true
       }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [27.8732, 39.6505]},
+      "properties": {
+        "id": "blk_001",
+        "name": "Balikesir Ataturk Parki",
+        "city": "Balikesir",
+        "district": "Altieylul",
+        "type": "park",
+        "capacity": 12000,
+        "facilities": ["su", "tuvalet", "elektrik"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [27.8868, 39.6442]},
+      "properties": {
+        "id": "blk_002",
+        "name": "Karesi Camlik Parki",
+        "city": "Balikesir",
+        "district": "Karesi",
+        "type": "park",
+        "capacity": 8000,
+        "facilities": ["su", "tuvalet"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [27.9686, 40.3517]},
+      "properties": {
+        "id": "blk_003",
+        "name": "Bandirma Ataturk Parki",
+        "city": "Balikesir",
+        "district": "Bandirma",
+        "type": "park",
+        "capacity": 10000,
+        "facilities": ["su", "tuvalet"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [27.0182, 39.5984]},
+      "properties": {
+        "id": "blk_004",
+        "name": "Edremit Sahil Parki",
+        "city": "Balikesir",
+        "district": "Edremit",
+        "type": "sahil",
+        "capacity": 9000,
+        "facilities": ["su"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [26.9701, 39.4980]},
+      "properties": {
+        "id": "blk_005",
+        "name": "Burhaniye Sahil Bulvari",
+        "city": "Balikesir",
+        "district": "Burhaniye",
+        "type": "sahil",
+        "capacity": 7500,
+        "facilities": ["su"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [26.6936, 39.3133]},
+      "properties": {
+        "id": "blk_006",
+        "name": "Ayvalik Cumhuriyet Meydani",
+        "city": "Balikesir",
+        "district": "Ayvalik",
+        "type": "meydan",
+        "capacity": 9000,
+        "facilities": ["su"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [27.6510, 40.1052]},
+      "properties": {
+        "id": "blk_007",
+        "name": "Gonen Ataturk Parki",
+        "city": "Balikesir",
+        "district": "Gonen",
+        "type": "park",
+        "capacity": 7000,
+        "facilities": ["su", "tuvalet"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [27.7896, 40.3963]},
+      "properties": {
+        "id": "blk_008",
+        "name": "Erdek Sahil Bulvari",
+        "city": "Balikesir",
+        "district": "Erdek",
+        "type": "sahil",
+        "capacity": 8000,
+        "facilities": ["su"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [28.1556, 39.9133]},
+      "properties": {
+        "id": "blk_009",
+        "name": "Susurluk Cumhuriyet Meydani",
+        "city": "Balikesir",
+        "district": "Susurluk",
+        "type": "meydan",
+        "capacity": 6000,
+        "facilities": ["su"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [28.1306, 39.3933]},
+      "properties": {
+        "id": "blk_010",
+        "name": "Bigadic Belediye Parki",
+        "city": "Balikesir",
+        "district": "Bigadic",
+        "type": "park",
+        "capacity": 5000,
+        "facilities": ["su"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [28.1739, 39.2419]},
+      "properties": {
+        "id": "blk_011",
+        "name": "Sindirgi Ataturk Meydani",
+        "city": "Balikesir",
+        "district": "Sindirgi",
+        "type": "meydan",
+        "capacity": 4500,
+        "facilities": ["su"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [28.6242, 39.5836]},
+      "properties": {
+        "id": "blk_012",
+        "name": "Dursunbey Cumhuriyet Parki",
+        "city": "Balikesir",
+        "district": "Dursunbey",
+        "type": "park",
+        "capacity": 5500,
+        "facilities": ["su"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [27.9669, 40.0489]},
+      "properties": {
+        "id": "blk_013",
+        "name": "Manyas Ataturk Parki",
+        "city": "Balikesir",
+        "district": "Manyas",
+        "type": "park",
+        "capacity": 4000,
+        "facilities": ["su"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [27.0967, 39.5575]},
+      "properties": {
+        "id": "blk_014",
+        "name": "Havran Belediye Meydani",
+        "city": "Balikesir",
+        "district": "Havran",
+        "type": "meydan",
+        "capacity": 4000,
+        "facilities": ["su"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [27.5072, 39.5917]},
+      "properties": {
+        "id": "blk_015",
+        "name": "Ivrindi Sehir Parki",
+        "city": "Balikesir",
+        "district": "Ivrindi",
+        "type": "park",
+        "capacity": 3500,
+        "facilities": ["su"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [27.5739, 40.5808]},
+      "properties": {
+        "id": "blk_016",
+        "name": "Marmara Adasi Sahil",
+        "city": "Balikesir",
+        "district": "Marmara",
+        "type": "sahil",
+        "capacity": 3000,
+        "facilities": ["su"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [28.1500, 39.6919]},
+      "properties": {
+        "id": "blk_017",
+        "name": "Kepsut Belediye Parki",
+        "city": "Balikesir",
+        "district": "Kepsut",
+        "type": "park",
+        "capacity": 3500,
+        "facilities": ["su"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [27.6597, 39.3814]},
+      "properties": {
+        "id": "blk_018",
+        "name": "Savastepe Cumhuriyet Meydani",
+        "city": "Balikesir",
+        "district": "Savastepe",
+        "type": "meydan",
+        "capacity": 3500,
+        "facilities": ["su"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [26.8525, 39.4117]},
+      "properties": {
+        "id": "blk_019",
+        "name": "Gomec Sahil Parki",
+        "city": "Balikesir",
+        "district": "Gomec",
+        "type": "sahil",
+        "capacity": 3000,
+        "facilities": ["su"],
+        "isOfficial": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [27.5781, 39.7378]},
+      "properties": {
+        "id": "blk_020",
+        "name": "Balya Cumhuriyet Meydani",
+        "city": "Balikesir",
+        "district": "Balya",
+        "type": "meydan",
+        "capacity": 2500,
+        "facilities": ["su"],
+        "isOfficial": true
+      }
     }
   ]
 }

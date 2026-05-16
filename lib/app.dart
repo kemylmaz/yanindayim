@@ -4,8 +4,18 @@ import 'package:go_router/go_router.dart';
 
 import 'core/models/user_mode.dart';
 import 'core/theme/app_theme.dart';
+import 'features/auth/rescuer_auth_screen.dart';
+import 'features/auth/victim_auth_screen.dart';
 import 'features/onboarding/mode_selection_screen.dart';
+import 'features/rescuer/home/rescuer_home_screen.dart';
+import 'features/rescuer/triage/triage_screen.dart';
+import 'features/settings/settings_screen.dart';
+import 'features/victim/checkin/checkin_screen.dart';
+import 'features/victim/donation/donation_screen.dart';
 import 'features/victim/home/victim_home_screen.dart';
+import 'features/victim/map/assembly_map_screen.dart';
+import 'features/victim/pfa/pfa_screen.dart';
+import 'features/victim/sos/sos_active_screen.dart';
 
 final _router = GoRouter(
   initialLocation: '/onboarding',
@@ -14,15 +24,25 @@ final _router = GoRouter(
       path: '/onboarding',
       builder: (context, state) => ModeSelectionScreen(
         onModeSelected: (mode) {
-          // TODO: Mode'u kalıcı kaydet (SharedPreferences).
-          // Sonra ilgili ana ekrana yönlendir.
           if (mode == UserMode.victim) {
-            context.go('/victim');
+            context.go('/auth/victim');
           } else {
-            context.go('/rescuer');
+            context.go('/auth/rescuer');
           }
         },
       ),
+    ),
+    GoRoute(
+      path: '/auth/victim',
+      builder: (context, state) => const VictimAuthScreen(),
+    ),
+    GoRoute(
+      path: '/settings',
+      builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(
+      path: '/auth/rescuer',
+      builder: (context, state) => const RescuerAuthScreen(),
     ),
     GoRoute(
       path: '/victim',
@@ -30,10 +50,7 @@ final _router = GoRouter(
       routes: [
         GoRoute(
           path: 'sos',
-          builder: (context, state) => const _PlaceholderScreen(
-            title: 'SOS',
-            subtitle: 'Düdük + 60s timer + SMS + 112 — yapım aşamasında',
-          ),
+          builder: (context, state) => const SosActiveScreen(),
         ),
         GoRoute(
           path: 'chat',
@@ -44,40 +61,31 @@ final _router = GoRouter(
         ),
         GoRoute(
           path: 'pfa',
-          builder: (context, state) => const _PlaceholderScreen(
-            title: 'Psikolojik İlk Yardım',
-            subtitle: 'pfa_flow.json akışı — yapım aşamasında',
-          ),
+          builder: (context, state) => const PfaScreen(),
         ),
         GoRoute(
           path: 'map',
-          builder: (context, state) => const _PlaceholderScreen(
-            title: 'Toplanma Alanları',
-            subtitle: 'Offline harita — yapım aşamasında',
-          ),
+          builder: (context, state) => const AssemblyMapScreen(),
         ),
         GoRoute(
           path: 'checkin',
-          builder: (context, state) => const _PlaceholderScreen(
-            title: 'Güvendeyim',
-            subtitle: 'SMS check-in — yapım aşamasında',
-          ),
+          builder: (context, state) => const CheckinScreen(),
         ),
         GoRoute(
           path: 'donation',
-          builder: (context, state) => const _PlaceholderScreen(
-            title: 'Bağış',
-            subtitle: 'AKUT, Kızılay, AHBAP, İhtiyaç Haritası deep-link',
-          ),
+          builder: (context, state) => const DonationScreen(),
         ),
       ],
     ),
     GoRoute(
       path: '/rescuer',
-      builder: (context, state) => const _PlaceholderScreen(
-        title: 'Kurtarıcı Modu',
-        subtitle: 'Tarama haritası yapım aşamasında...',
-      ),
+      builder: (context, state) => const RescuerHomeScreen(),
+      routes: [
+        GoRoute(
+          path: 'triage',
+          builder: (context, state) => const TriageScreen(),
+        ),
+      ],
     ),
   ],
 );

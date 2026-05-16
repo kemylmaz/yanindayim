@@ -154,9 +154,7 @@ class _TopBar extends StatelessWidget {
         ),
         _IconButton(
           icon: Icons.settings_outlined,
-          onTap: () {
-            // TODO: Settings ekrani
-          },
+          onTap: () => context.push('/settings'),
         ),
       ],
     );
@@ -391,18 +389,24 @@ class _SosButtonState extends State<_SosButton>
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 1,
-      child: GestureDetector(
-        onTapDown: (_) => setState(() => _pressed = true),
-        onTapUp: (_) => setState(() => _pressed = false),
-        onTapCancel: () => setState(() => _pressed = false),
-        onTap: widget.onPressed,
-        child: AnimatedScale(
-          scale: _pressed ? 0.97 : 1.0,
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOutCubic,
-          child: Stack(
+    return Semantics(
+      button: true,
+      label: 'Acil SOS başlat',
+      hint:
+          'Aktive ettiğinde düdük çalar, titreşim başlar, 60 saniye sonra acil kişilere SMS ve 112 araması açılır.',
+      onTap: widget.onPressed,
+      child: AspectRatio(
+        aspectRatio: 1,
+        child: GestureDetector(
+          onTapDown: (_) => setState(() => _pressed = true),
+          onTapUp: (_) => setState(() => _pressed = false),
+          onTapCancel: () => setState(() => _pressed = false),
+          onTap: widget.onPressed,
+          child: AnimatedScale(
+            scale: _pressed ? 0.97 : 1.0,
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOutCubic,
+            child: Stack(
             alignment: Alignment.center,
             children: [
               // Outer expanding rings (subtle warning)
@@ -470,6 +474,7 @@ class _SosButtonState extends State<_SosButton>
             ],
           ),
         ),
+      ),
       ),
     );
   }
