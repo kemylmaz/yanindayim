@@ -1,13 +1,14 @@
-// Projede istenen hızlı soru çipleri de burada yer alacak, böylece kullanıcılar tek tıkla sık sorulan soruları sorabilecekler.
-// Proje renk paletine uygun olarak, mesaj balonları ve arka plan renkleri de burada tanımlanacak.
-// Proje mimarisi açısından, bu ekran ve controller, yapay zeka
-//sohbet deneyiminin merkezinde yer alacak ve kullanıcıların AFAD ve Kızılay
-//verileriyle etkileşimde bulunmasını sağlayacak.
+// Bu ekran, kullanıcının çevrimdışı yapay zeka asistanıyla mesajlaşmasını sağlar.
+// Ses tanıma servisiyle (Speech-to-Text) entegre çalışarak sesli komutları metne çevirir.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/services/speech_service.dart';
 import 'chat_controller.dart';
+
+// Mikrofonun anlık olarak dinleme yapıp yapmadığını tutan basit bir UI State Provider
+final isListeningProvider = StateProvider<bool>((ref) => false);
 
 class ChatScreen extends ConsumerWidget {
   ChatScreen({super.key});
@@ -19,7 +20,10 @@ class ChatScreen extends ConsumerWidget {
     final chatState = ref.watch(chatControllerProvider);
     final chatController = ref.read(chatControllerProvider.notifier);
 
-    // PROJECT.md'de istenen hızlı soru çipleri
+    // Ses servisimiz ve mikrofonun durumunu dinliyoruz
+    final speechService = ref.watch(speechServiceProvider);
+    final isListening = ref.watch(isListeningProvider);
+
     final quickQuestions = [
       "Toplanma alanı nerede?",
       "İlk yardım",
@@ -28,9 +32,9 @@ class ChatScreen extends ConsumerWidget {
     ];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4EDE0), // Proje krem rengi
+      backgroundColor: const Color(0xFFF4EDE0),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F3D2E), // Proje derin yeşil rengi
+        backgroundColor: const Color(0xFF0F3D2E),
         title: const Row(
           children: [
             Icon(Icons.wifi_off, color: Colors.white, size: 18),
@@ -44,19 +48,28 @@ class ChatScreen extends ConsumerWidget {
       ),
       body: Column(
         children: [
-          // Projede istenen sabit durum bandı
+          // Çevrimdışı Durum Bandı
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 8),
             color: const Color(0xFF4CAF7A).withValues(alpha: 0.2),
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.circle, color: Color(0xFF4CAF7A), size: 12),
-                SizedBox(width: 8),
+                Icon(
+                  Icons.circle,
+                  color: isListening ? Colors.red : const Color(0xFF4CAF7A),
+                  size: 12,
+                ),
+                const SizedBox(width: 8),
                 Text(
-                  "İnternet olmadan yanındayım — çevrimdışı asistan",
-                  style: TextStyle(fontWeight: FontWeight.w500),
+                  isListening
+                      ? "🎙️ Şu an sesiniz dinleniyor, konuşun..."
+                      : "İnternet olmadan yanındayım — çevrimdışı asistan",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    color: isListening ? Colors.red.shade800 : Colors.black,
+                  ),
                 ),
               ],
             ),
@@ -69,7 +82,6 @@ class ChatScreen extends ConsumerWidget {
               itemCount:
                   chatState.messages.length + (chatState.isLoading ? 1 : 0),
               itemBuilder: (context, index) {
-                // Yükleniyor animasyonu (titreyen ...)
                 if (index == chatState.messages.length && chatState.isLoading) {
                   return const Align(
                     alignment: Alignment.centerLeft,
@@ -150,7 +162,7 @@ class ChatScreen extends ConsumerWidget {
               ),
             ),
 
-          // Alt Metin Giriş Alanı
+          // Alt Metin ve Ses Giriş Alanı
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -169,7 +181,9 @@ class ChatScreen extends ConsumerWidget {
                   child: TextField(
                     controller: _textController,
                     decoration: InputDecoration(
-                      hintText: "Soru sor...",
+                      hintText: isListening
+                          ? "Konuşmanız metne dökülüyor..."
+                          : "Soru sor veya seslen...",
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide.none,
@@ -188,6 +202,37 @@ class ChatScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
+
+                // JÜRİYİ ETKİLEYECEK GERÇEK SES BUTONU
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: isListening
+                      ? Colors.red
+                      : const Color(0xFF4CAF7A),
+                  child: IconButton(
+                    icon: Icon(
+                      isListening ? Icons.stop : Icons.mic,
+                      color: Colors.white,
+                    ),
+                    onPressed: () async {
+                      if (isListening) {
+                        // Eğer zaten dinliyorsa durdur
+                        await speechService.stopListening();
+                        ref.read(isListeningProvider.notifier).state = false;
+                      } else {
+                        // Dinlemiyorsa dinlemeyi başlat
+                        ref.read(isListeningProvider.notifier).state = true;
+                        await speechService.startListening(
+                          onResult: (recognizedText) {
+                            // Sesten gelen kelimeleri anlık olarak yazı alanına dolduruyoruz
+                            _textController.text = recognizedText;
+                          },
+                        );
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
                 CircleAvatar(
                   radius: 24,
                   backgroundColor: const Color(0xFF0F3D2E),
@@ -196,6 +241,11 @@ class ChatScreen extends ConsumerWidget {
                     onPressed: () {
                       chatController.sendMessage(_textController.text);
                       _textController.clear();
+                      // Ses açık kaldıysa güvenli kapatma
+                      if (ref.read(isListeningProvider)) {
+                        speechService.stopListening();
+                        ref.read(isListeningProvider.notifier).state = false;
+                      }
                     },
                   ),
                 ),

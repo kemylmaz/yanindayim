@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/services/knowledge_service.dart';
 import 'features/victim/chat/chat_screen.dart';
 
-void main() {
+void main() async {
+  // <--- async ekledik
   WidgetsFlutterBinding.ensureInitialized();
+
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -13,7 +16,17 @@ void main() {
     ),
   );
 
-  runApp(const ProviderScope(child: MyApp()));
+  // Bir tane ProviderContainer oluşturup uygulamadan önce veriyi yüklüyoruz
+  final container = ProviderContainer();
+  await container.read(knowledgeServiceProvider).loadKnowledge();
+
+  runApp(
+    UncontrolledProviderScope(
+      // <--- Burayı Uncontrolled yaptıgımızda container'ı içine verebiliyoruz
+      container: container,
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
