@@ -74,4 +74,5 @@ flutter:
     - assets/pfa_flow.json
     - assets/knowledge_base/
     - assets/maps/
+    - assets/knowledge_base/chunks.json
     - assets/images/
