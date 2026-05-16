@@ -117,7 +117,7 @@ class _AssemblyMapScreenState extends State<AssemblyMapScreen> {
                         points: [_userLocation, _selected!.location],
                         strokeWidth: 4.5,
                         color: AppColors.primary,
-                        pattern: const StrokePattern.dashed(segments: [10, 10]),
+                        pattern:StrokePattern.dashed(segments: [10, 10]),
                       ),
                     ],
                   ),
