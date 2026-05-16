@@ -4,8 +4,11 @@ import 'package:go_router/go_router.dart';
 
 import 'core/models/user_mode.dart';
 import 'core/theme/app_theme.dart';
+import 'features/auth/rescuer_auth_screen.dart';
+import 'features/auth/victim_auth_screen.dart';
 import 'features/onboarding/mode_selection_screen.dart';
 import 'features/victim/home/victim_home_screen.dart';
+import 'features/victim/sos/sos_active_screen.dart';
 
 final _router = GoRouter(
   initialLocation: '/onboarding',
@@ -14,15 +17,21 @@ final _router = GoRouter(
       path: '/onboarding',
       builder: (context, state) => ModeSelectionScreen(
         onModeSelected: (mode) {
-          // TODO: Mode'u kalıcı kaydet (SharedPreferences).
-          // Sonra ilgili ana ekrana yönlendir.
           if (mode == UserMode.victim) {
-            context.go('/victim');
+            context.go('/auth/victim');
           } else {
-            context.go('/rescuer');
+            context.go('/auth/rescuer');
           }
         },
       ),
+    ),
+    GoRoute(
+      path: '/auth/victim',
+      builder: (context, state) => const VictimAuthScreen(),
+    ),
+    GoRoute(
+      path: '/auth/rescuer',
+      builder: (context, state) => const RescuerAuthScreen(),
     ),
     GoRoute(
       path: '/victim',
@@ -30,10 +39,7 @@ final _router = GoRouter(
       routes: [
         GoRoute(
           path: 'sos',
-          builder: (context, state) => const _PlaceholderScreen(
-            title: 'SOS',
-            subtitle: 'Düdük + 60s timer + SMS + 112 — yapım aşamasında',
-          ),
+          builder: (context, state) => const SosActiveScreen(),
         ),
         GoRoute(
           path: 'chat',
