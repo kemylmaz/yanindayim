@@ -20,42 +20,50 @@ class AIService {
   final KnowledgeService _knowledgeService;
   InferenceModel? _model;
   InferenceChat? _chat;
+  bool _gemmaTried = false;
 
   AIService(this._knowledgeService);
 
-  // Modeli güvenli bir şekilde başlatan fonksiyon (Kullanılmayan değişken hatası çözüldü)
+  bool get isGemmaReady => _chat != null;
+
+  /// Gemma modelini bir kez başlatmayı dener. Cihazda model yüklü değilse
+  /// sessizce başarısız olur — bu durumda bilgi bankası fallback'i kullanılır.
   Future<void> initModel() async {
+    if (_gemmaTried) return;
+    _gemmaTried = true;
     try {
-      if (_model == null) {
-        // Modeli sadece hafızaya yükleyerek hazır hale getiriyoruz
-        _model = await FlutterGemma.getActiveModel(
-          maxTokens: 512,
-          preferredBackend: PreferredBackend.gpu,
-        );
-        _chat = await _model!.createChat();
-        debugPrint("✅ Yerel Gemma Modeli başarıyla hazırlandı.");
-      }
+      _model = await FlutterGemma.getActiveModel(
+        maxTokens: 512,
+        preferredBackend: PreferredBackend.gpu,
+      );
+      _chat = await _model!.createChat();
+      debugPrint('✅ Yerel Gemma modeli hazır.');
     } catch (e) {
-      debugPrint("❌ Yerel Gemma Modeli başlatılırken hata: $e");
+      debugPrint('ℹ️ Gemma modeli yok, bilgi bankası fallback kullanılacak: $e');
+      _model = null;
+      _chat = null;
     }
   }
 
-  // Cihaz içi LLM'den yanıt alan ana fonksiyon (getAnswer tanım hatası çözüldü)
   Future<String> answerQuestion(String userQuery) async {
+    if (!_gemmaTried) await initModel();
+
+    final chunk = _knowledgeService.bestChunk(userQuery);
+
+    if (isGemmaReady) {
+      final answer = await _askGemma(userQuery, chunk?['text']?.toString());
+      if (answer != null && answer.trim().isNotEmpty) return answer;
+    }
+
+    return _knowledgeFallback(userQuery, chunk);
+  }
+
+  Future<String?> _askGemma(String userQuery, String? context) async {
     try {
-      // 1. Adım: Bilgi bankasından ilgili bağlamı sorgula
-      final String context = await _knowledgeService.getRelevantContext(
-        userQuery,
-      );
-
-      String finalPrompt = "";
-
-      // 2. Adım: Prompt yapısını RAG formatına göre hazırla
-      if (context.isNotEmpty) {
-        finalPrompt =
-            """
-Sen 'Yanında' isimli çevrimdışı deprem ve acil durum asistanısın. 
-Yalnızca sana verilen aşağıdaki güvenilir bilgileri kullanarak kısa, net ve sakinleştirici bir cevap ver. 
+      final prompt = context != null && context.isNotEmpty
+          ? '''
+Sen 'Yanında' isimli çevrimdışı deprem ve acil durum asistanısın.
+Yalnızca aşağıdaki güvenilir bilgileri kullanarak kısa, net ve sakinleştirici bir cevap ver.
 Asla bu bilgilerin dışına çıkma ve hayali bilgi uydurma.
 
 [GÜVENİLİR BİLGİ]:
@@ -63,39 +71,53 @@ $context
 
 [KULLANICI SORUSU]:
 $userQuery
-""";
-      } else {
-        finalPrompt =
-            """
-Sen 'Yanında' isimli acil durum asistanısın. 
+'''
+          : '''
+Sen 'Yanında' isimli acil durum asistanısın.
 Kullanıcıya deprem, ilk yardım veya hayatta kalma konularında kısa, net ve panik yaptırmayacak bir cevap ver.
 
 [KULLANICI SORUSU]:
 $userQuery
-""";
-      }
+''';
 
-      // 3. Adım: Güncel flutter_gemma paket standartlarına göre cevabı iste
-      if (_model == null || _chat == null) {
-        await initModel();
-      }
-
-      if (_chat != null) {
-        await _chat!.addQueryChunk(
-          Message.text(text: finalPrompt, isUser: true),
-        );
-        final result = await _chat!.generateChatResponse();
-        final responseText =
-            (result as dynamic).text ??
-            (result as dynamic).token ??
-            result.toString();
-        return responseText;
-      }
-
-      return "Şu an yanıt üretemiyorum, lütfen tekrar dener misin?";
+      await _chat!.addQueryChunk(Message.text(text: prompt, isUser: true));
+      final result = await _chat!.generateChatResponse();
+      final text = (result as dynamic).text as String? ??
+          (result as dynamic).token as String? ??
+          result.toString();
+      return text;
     } catch (e) {
-      debugPrint("❌ Yanıt üretilirken hata oluştu: $e");
-      return "Acil durum hattı şu an yanıt veremiyor. Lütfen sakin kalın.";
+      debugPrint('⚠️ Gemma yanıt üretemedi, fallback kullanılıyor: $e');
+      return null;
     }
+  }
+
+  /// Bilgi bankasından gelen chunk'ı kullanıcı dostu kısa bir yanıta dönüştürür.
+  /// Hackathon demosu için Gemma indirilmemiş olsa da kullanışlı cevaplar verir.
+  String _knowledgeFallback(String userQuery, Map<String, dynamic>? chunk) {
+    if (chunk == null) {
+      return 'Bu konuda elimde güvenilir bilgi yok. '
+          'Acil bir durumdaysan 112\'yi ara veya ana ekrandan SOS butonuna bas.';
+    }
+
+    final title = chunk['title']?.toString().trim();
+    final text = chunk['text']?.toString().trim() ?? '';
+    final shortened = _shorten(text, maxChars: 600);
+
+    if (title != null && title.isNotEmpty) {
+      return '$title\n\n$shortened';
+    }
+    return shortened;
+  }
+
+  String _shorten(String text, {required int maxChars}) {
+    if (text.length <= maxChars) return text;
+    // Cümle sınırında kesmeye çalış.
+    final slice = text.substring(0, maxChars);
+    final lastStop = slice.lastIndexOf(RegExp(r'[\.\!\?]'));
+    if (lastStop > maxChars ~/ 2) {
+      return '${slice.substring(0, lastStop + 1)}…';
+    }
+    return '$slice…';
   }
 }

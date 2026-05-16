@@ -10,6 +10,7 @@ import 'features/onboarding/mode_selection_screen.dart';
 import 'features/rescuer/home/rescuer_home_screen.dart';
 import 'features/rescuer/triage/triage_screen.dart';
 import 'features/settings/settings_screen.dart';
+import 'features/victim/chat/chat_screen.dart';
 import 'features/victim/checkin/checkin_screen.dart';
 import 'features/victim/donation/donation_screen.dart';
 import 'features/victim/home/victim_home_screen.dart';
@@ -54,10 +55,7 @@ final _router = GoRouter(
         ),
         GoRoute(
           path: 'chat',
-          builder: (context, state) => const _PlaceholderScreen(
-            title: 'AI Sohbet',
-            subtitle: 'Offline asistan — Serhat tarafından',
-          ),
+          builder: (context, state) => ChatScreen(),
         ),
         GoRoute(
           path: 'pfa',
@@ -100,47 +98,6 @@ class YanindaApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       routerConfig: _router,
-    );
-  }
-}
-
-class _PlaceholderScreen extends StatelessWidget {
-  const _PlaceholderScreen({required this.title, required this.subtitle});
-
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.go('/onboarding'),
-        ),
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.construction_rounded,
-                size: 64,
-                color: Color(0xFF5B6661),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                subtitle,
-                style: Theme.of(context).textTheme.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

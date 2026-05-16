@@ -131,29 +131,17 @@ class _TopBar extends StatelessWidget {
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Yanında',
-                style: AppTypography.headlineMedium.copyWith(
-                  fontWeight: FontWeight.w700,
-                  height: 1.0,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                'Mağdur modu',
-                style: AppTypography.labelSmall.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
+          child: Text(
+            'Yanında',
+            style: AppTypography.headlineMedium.copyWith(
+              fontWeight: FontWeight.w700,
+              height: 1.0,
+            ),
           ),
         ),
         _IconButton(
           icon: Icons.settings_outlined,
+          semanticLabel: 'Ayarlar',
           onTap: () => context.push('/settings'),
         ),
       ],
@@ -162,25 +150,34 @@ class _TopBar extends StatelessWidget {
 }
 
 class _IconButton extends StatelessWidget {
-  const _IconButton({required this.icon, required this.onTap});
+  const _IconButton({
+    required this.icon,
+    required this.onTap,
+    this.semanticLabel,
+  });
 
   final IconData icon;
   final VoidCallback onTap;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Icon(icon, color: AppColors.primaryDeep, size: 20),
         ),
-        child: Icon(icon, color: AppColors.primaryDeep, size: 20),
       ),
     );
   }
@@ -248,7 +245,8 @@ class _StatusStripState extends State<_StatusStrip>
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return MergeSemantics(
+      child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -322,6 +320,7 @@ class _StatusStripState extends State<_StatusStrip>
             color: AppColors.textSecondary,
           ),
         ],
+      ),
       ),
     );
   }
@@ -630,7 +629,12 @@ class _QuickActionState extends State<_QuickAction> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedScale(
+    return Semantics(
+      button: true,
+      label: '${widget.label}, ${widget.subtitle}',
+      onTap: widget.onTap,
+      excludeSemantics: true,
+      child: AnimatedScale(
       scale: _pressed ? 0.97 : 1.0,
       duration: const Duration(milliseconds: 180),
       curve: Curves.easeOutCubic,
@@ -686,6 +690,7 @@ class _QuickActionState extends State<_QuickAction> {
           ),
         ),
       ),
+      ),
     );
   }
 }
@@ -699,7 +704,13 @@ class _DonationBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return Semantics(
+      button: true,
+      label:
+          'Bağışla destek ol. AKUT, Kızılay, AHBAP ve İhtiyaç Haritası kuruluşlarına bağış yap.',
+      onTap: onTap,
+      excludeSemantics: true,
+      child: InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
@@ -760,6 +771,7 @@ class _DonationBanner extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

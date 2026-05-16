@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/services/beacon_broadcast_service.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/theme/typography.dart';
 import 'sos_controller.dart';
@@ -97,21 +98,26 @@ class _CountdownView extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 250),
-            transitionBuilder: (child, animation) => ScaleTransition(
-              scale: animation,
-              child: FadeTransition(opacity: animation, child: child),
-            ),
-            child: Text(
-              '${state.countdownRemaining}',
-              key: ValueKey(state.countdownRemaining),
-              textAlign: TextAlign.center,
-              style: AppTypography.displayLarge.copyWith(
-                color: AppColors.textOnPrimary,
-                fontSize: 180,
-                height: 1.0,
-                fontWeight: FontWeight.w800,
+          Semantics(
+            liveRegion: true,
+            label: '${state.countdownRemaining} saniye kaldı',
+            excludeSemantics: true,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 250),
+              transitionBuilder: (child, animation) => ScaleTransition(
+                scale: animation,
+                child: FadeTransition(opacity: animation, child: child),
+              ),
+              child: Text(
+                '${state.countdownRemaining}',
+                key: ValueKey(state.countdownRemaining),
+                textAlign: TextAlign.center,
+                style: AppTypography.displayLarge.copyWith(
+                  color: AppColors.textOnPrimary,
+                  fontSize: 180,
+                  height: 1.0,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           ),
@@ -148,7 +154,13 @@ class _CancelButtonState extends State<_CancelButton> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedScale(
+    return Semantics(
+      button: true,
+      label: 'Vazgeç',
+      hint: 'SOS başlatma işlemini iptal eder',
+      onTap: widget.onTap,
+      excludeSemantics: true,
+      child: AnimatedScale(
       scale: _pressed ? 0.97 : 1.0,
       duration: const Duration(milliseconds: 180),
       curve: Curves.easeOutCubic,
@@ -176,6 +188,7 @@ class _CancelButtonState extends State<_CancelButton> {
             ),
           ),
         ),
+      ),
       ),
     );
   }
@@ -310,12 +323,15 @@ class _ActiveViewState extends ConsumerState<_ActiveView>
             ),
           ),
 
-          Text(
-            'Acil yardım iletiliyor',
-            textAlign: TextAlign.center,
-            style: AppTypography.headlineLarge.copyWith(
-              color: AppColors.textOnPrimary,
-              fontWeight: FontWeight.w700,
+          Semantics(
+            header: true,
+            child: Text(
+              'Acil yardım iletiliyor',
+              textAlign: TextAlign.center,
+              style: AppTypography.headlineLarge.copyWith(
+                color: AppColors.textOnPrimary,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
           const SizedBox(height: 6),
@@ -472,13 +488,19 @@ class _ActivePulsePainter extends CustomPainter {
 
 // ──────────────────────────────── milestones ────────────────────────────────
 
-class _MilestoneList extends StatelessWidget {
+class _MilestoneList extends ConsumerWidget {
   const _MilestoneList({required this.milestones});
 
   final Set<SosMilestone> milestones;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final beaconState = ref.watch(beaconBroadcastStateProvider).valueOrNull;
+    final beaconId = beaconState?.beacon?.anonymousId;
+    final beaconSubtitle = milestones.contains(SosMilestone.beaconActivated)
+        ? (beaconId != null ? 'Anonim ID: $beaconId' : null)
+        : 'Geri sayım bitince başlar';
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
@@ -498,6 +520,7 @@ class _MilestoneList extends StatelessWidget {
           _MilestoneRow(
             label: 'Beacon yayında',
             done: milestones.contains(SosMilestone.beaconActivated),
+            subtitle: beaconSubtitle,
           ),
           const SizedBox(height: 10),
           _MilestoneRow(
@@ -538,7 +561,16 @@ class _MilestoneRow extends StatelessWidget {
         ? AppColors.primaryLight
         : AppColors.textOnPrimary.withValues(alpha: 0.4);
 
-    return Row(
+    final semanticLabel = done
+        ? '$label, tamamlandı'
+        : subtitle != null
+            ? '$label, bekliyor, $subtitle'
+            : '$label, bekliyor';
+
+    return Semantics(
+      label: semanticLabel,
+      excludeSemantics: true,
+      child: Row(
       children: [
         AnimatedContainer(
           duration: const Duration(milliseconds: 250),
@@ -585,6 +617,7 @@ class _MilestoneRow extends StatelessWidget {
           ),
         ),
       ],
+      ),
     );
   }
 }
@@ -636,7 +669,13 @@ class _StopButtonState extends State<_StopButton>
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: 'SOS\'u kapat',
+      hint: 'Basılı tutarak yaklaşık bir saniye bekleyin. Düdük durur ve SOS sonlanır.',
+      onLongPress: widget.onConfirmed,
+      excludeSemantics: true,
+      child: GestureDetector(
       onTapDown: (_) => _onHoldStart(),
       onTapUp: (_) => _onHoldEnd(),
       onTapCancel: _onHoldEnd,
@@ -722,6 +761,7 @@ class _StopButtonState extends State<_StopButton>
             ),
           ),
         ),
+      ),
       ),
     );
   }

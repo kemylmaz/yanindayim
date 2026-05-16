@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/accessibility_service.dart';
 import '../../../core/services/audio_service.dart';
+import '../../../core/services/beacon_broadcast_service.dart';
 import '../../../core/services/emergency_service.dart';
 
 enum SosPhase { countdown, active, stopped }
@@ -49,7 +50,7 @@ class SosState {
 }
 
 class SosController extends StateNotifier<SosState> {
-  SosController(this._audio, this._emergency, this._a11y)
+  SosController(this._audio, this._emergency, this._a11y, this._beacon)
       : super(const SosState()) {
     _tickEverySecond();
   }
@@ -57,7 +58,12 @@ class SosController extends StateNotifier<SosState> {
   final AudioService _audio;
   final EmergencyService _emergency;
   final AccessibilityService _a11y;
+  final BeaconBroadcastService _beacon;
   Timer? _timer;
+
+  /// SOS aktif olduğunda yayınlanan beacon'ın anonim ID'si. UI bunu okuyarak
+  /// kullanıcıya gerçek kimlik gösterebilir.
+  String? get currentBeaconId => _beacon.state.beacon?.anonymousId;
 
   void _tickEverySecond() {
     _timer = Timer.periodic(const Duration(seconds: 1), (_) => _onTick());
@@ -84,6 +90,15 @@ class SosController extends StateNotifier<SosState> {
       _a11y.startSosVibration();
       // Görme engelli için sesli komut dinlemeye başla.
       unawaited(_a11y.startListening(onStopRecognized: cancel));
+      // Anonim BLE beacon yayınını başlat — kurtarıcılar bu sinyali yakalar.
+      // TODO(prod): kullanıcının bloodType/medicalFlags'ini ve gerçek konumunu
+      // (geolocator) StorageService'ten oku. Şimdilik kurtarıcı demo merkezinden
+      // ~80m kuzeydoğuya offset'li sabit konum — haritada görünür mesafe için.
+      unawaited(_beacon.start(
+        lat: 39.6512,
+        lng: 27.8740,
+        batteryPercent: 100,
+      ));
       state = state.copyWith(
         phase: SosPhase.active,
         countdownRemaining: 0,
@@ -128,6 +143,7 @@ class SosController extends StateNotifier<SosState> {
     await _audio.stopWhistle();
     _a11y.stopVibration();
     unawaited(_a11y.stopListening());
+    unawaited(_beacon.stop());
     state = state.copyWith(phase: SosPhase.stopped);
   }
 
@@ -137,6 +153,7 @@ class SosController extends StateNotifier<SosState> {
     _audio.stopWhistle();
     _a11y.stopVibration();
     _a11y.stopListening();
+    _beacon.stop();
     super.dispose();
   }
 }
@@ -147,5 +164,6 @@ final sosControllerProvider =
     AudioService.instance,
     EmergencyService.instance,
     AccessibilityService.instance,
+    BeaconBroadcastService.instance,
   );
 });

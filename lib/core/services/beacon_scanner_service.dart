@@ -1,41 +1,120 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../models/beacon.dart';
 import '../models/victim_beacon.dart';
+import 'device_id_service.dart';
+import 'live_beacon_channel.dart';
+import 'storage_service.dart';
 
 /// BLE Beacon tarama servisi.
 ///
-/// Hackathon demosu için MOCK implementation — sahte mağdur beacon'larını
-/// stream olarak yayar. Konum etrafında 4 sahte yayın oluşturur, RSSI ve
-/// pil seviyeleri zamanla değişir (gerçekçi olma hissi için).
+/// Hackathon demosu için MOCK + LIVE hibrit:
+///   • Mock: Sabit 5 sahte mağdur beacon'ı yayar (RSSI/pil mutate edilir).
+///   • Live: Mağdur tarafından SOS başlatıldığında `BeaconBroadcastService`
+///     Hive'a yazdığı self beacon'ı yakalayıp listeye ekler — kurtarıcı
+///     haritasında o noktayı gerçek zamanlı gösterir.
 ///
-/// Production: flutter_blue_plus.startScan ile değiştirilecek.
+/// Production: flutter_blue_plus.startScan ile değiştirilecek; advertise
+/// payload'ı parse edilip aynı VictimBeacon yapısına dönüştürülecek.
 class BeaconScannerService {
   BeaconScannerService._();
   static final instance = BeaconScannerService._();
 
-  static const _kDemoCenter = LatLng(41.0117, 28.9810);
+  // Balıkesir Atatürk Parkı civarı — harita ekranı ile aynı referans nokta.
+  static const _kDemoCenter = LatLng(39.6505, 27.8732);
+
+  // Hive'daki self beacon kaydının anahtarı (BeaconBroadcastService ile aynı).
+  static const _kSelfBeaconKey = 'self';
 
   Stream<List<VictimBeacon>> scan() {
-    final beacons = _generateInitialBeacons();
+    final mocks = _generateInitialBeacons();
     final controller = StreamController<List<VictimBeacon>>();
-    Timer? timer;
+    Timer? mutateTimer;
+    StreamSubscription<BoxEvent>? hiveSub;
+    StreamSubscription<List<VictimBeacon>>? remoteSub;
+    var remoteBeacons = const <VictimBeacon>[];
+
+    void emit() {
+      // Sıra: önce uzak (Supabase realtime), sonra self (Hive), sonra mock'lar.
+      final list = <VictimBeacon>[
+        ...remoteBeacons,
+      ];
+      final self = _readSelf();
+      if (self != null) list.add(self);
+      list.addAll(mocks);
+      controller.add(list);
+    }
 
     controller.onListen = () {
-      controller.add(beacons);
-      timer = Timer.periodic(const Duration(seconds: 3), (_) {
-        _mutate(beacons);
-        controller.add(List<VictimBeacon>.from(beacons));
+      emit();
+      mutateTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+        _mutate(mocks);
+        emit();
       });
+      // Hive'daki self beacon değişimlerini canlı izle (aynı cihaz demosu).
+      try {
+        hiveSub =
+            StorageService.beaconBox.watch(key: _kSelfBeaconKey).listen((_) {
+          emit();
+        });
+      } catch (e) {
+        // beaconBox açık değilse (henüz init olmamış) sessizce geç.
+      }
+      // Supabase realtime — diğer cihazlardan yayın yapan mağdurları dinle.
+      () async {
+        try {
+          final myDeviceId = await DeviceIdService.get();
+          remoteSub = LiveBeaconChannel.instance
+              .streamOthers(myDeviceId)
+              .listen((others) {
+            remoteBeacons = others;
+            emit();
+          });
+        } catch (e) {
+          // Supabase erişilemiyorsa offline demo modunda çalışmaya devam et.
+        }
+      }();
     };
 
     controller.onCancel = () {
-      timer?.cancel();
+      mutateTimer?.cancel();
+      hiveSub?.cancel();
+      remoteSub?.cancel();
     };
 
     return controller.stream;
+  }
+
+  /// Hive'dan kaydedilmiş self beacon'ı okur ve VictimBeacon'a dönüştürür.
+  /// Yayın yoksa null döner.
+  VictimBeacon? _readSelf() {
+    try {
+      final box = StorageService.beaconBox;
+      final raw = box.get(_kSelfBeaconKey);
+      if (raw == null) return null;
+      return _toVictim(raw);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  VictimBeacon _toVictim(Beacon b) {
+    return VictimBeacon(
+      anonymousId: b.anonymousId,
+      location: LatLng(b.latitude, b.longitude),
+      batteryPercent: b.batteryPercent,
+      bloodType: b.bloodType.isEmpty ? null : b.bloodType,
+      medicalFlags: b.medicalFlags,
+      broadcastStarted: b.broadcastStarted,
+      lastSeen: b.lastSeen ?? DateTime.now(),
+      // Self beacon "aynı cihaz" senaryosunda yakın varsayılır — kurtarıcının
+      // hemen yanında. Production'da gerçek RSSI gelir.
+      rssi: b.rssi ?? -45,
+    );
   }
 
   List<VictimBeacon> _generateInitialBeacons() {

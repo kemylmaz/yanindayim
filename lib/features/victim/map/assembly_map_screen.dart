@@ -9,6 +9,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../../../core/theme/colors.dart';
 import '../../../core/theme/typography.dart';
+import 'cached_tile_provider.dart';
 
 class AssemblyMapScreen extends StatefulWidget {
   const AssemblyMapScreen({super.key});
@@ -22,9 +23,9 @@ class _AssemblyMapScreenState extends State<AssemblyMapScreen> {
   List<_AssemblyArea> _areas = const [];
   _AssemblyArea? _selected;
 
-  // Demo amaçlı sabit kullanıcı konumu (İstanbul/Gülhane civarı).
+  // Demo amaçlı sabit kullanıcı konumu (Balıkesir merkez / Atatürk Parkı).
   // Production: geolocator ile gerçek konum okunur.
-  static const _userLocation = LatLng(41.0117, 28.9810);
+  static const _userLocation = LatLng(39.6505, 27.8732);
 
   @override
   void initState() {
@@ -37,22 +38,26 @@ class _AssemblyMapScreenState extends State<AssemblyMapScreen> {
         await rootBundle.loadString('assets/maps/assembly_areas.geojson');
     final json = jsonDecode(raw) as Map<String, dynamic>;
     final features = json['features'] as List<dynamic>;
-    final parsed = features.map((f) {
-      final map = f as Map<String, dynamic>;
-      final geometry = map['geometry'] as Map<String, dynamic>;
-      final coords = (geometry['coordinates'] as List).cast<num>();
-      final props = map['properties'] as Map<String, dynamic>;
-      return _AssemblyArea(
-        id: props['id'] as String,
-        name: props['name'] as String,
-        district: props['district'] as String,
-        city: props['city'] as String,
-        capacity: props['capacity'] as int? ?? 0,
-        facilities:
-            (props['facilities'] as List?)?.cast<String>() ?? const <String>[],
-        location: LatLng(coords[1].toDouble(), coords[0].toDouble()),
-      );
-    }).toList();
+    final parsed = features
+        .map((f) {
+          final map = f as Map<String, dynamic>;
+          final geometry = map['geometry'] as Map<String, dynamic>;
+          final coords = (geometry['coordinates'] as List).cast<num>();
+          final props = map['properties'] as Map<String, dynamic>;
+          return _AssemblyArea(
+            id: props['id'] as String,
+            name: props['name'] as String,
+            district: props['district'] as String,
+            city: props['city'] as String,
+            capacity: props['capacity'] as int? ?? 0,
+            facilities: (props['facilities'] as List?)?.cast<String>() ??
+                const <String>[],
+            location: LatLng(coords[1].toDouble(), coords[0].toDouble()),
+          );
+        })
+        // Demo kapsamı: yalnızca Balıkesir toplanma alanları gösterilir.
+        .where((a) => a.city.toLowerCase() == 'balikesir')
+        .toList();
 
     parsed.sort((a, b) => _distance(_userLocation, a.location)
         .compareTo(_distance(_userLocation, b.location)));
@@ -88,11 +93,14 @@ class _AssemblyMapScreenState extends State<AssemblyMapScreen> {
           children: [
             FlutterMap(
               mapController: _mapController,
-              options: const MapOptions(
+              options: MapOptions(
                 initialCenter: _userLocation,
-                initialZoom: 12,
-                minZoom: 4,
+                initialZoom: 10,
+                minZoom: 6,
                 maxZoom: 18,
+                interactionOptions: const InteractionOptions(
+                  flags: InteractiveFlag.all,
+                ),
               ),
               children: [
                 TileLayer(
@@ -100,7 +108,19 @@ class _AssemblyMapScreenState extends State<AssemblyMapScreen> {
                       'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                   userAgentPackageName: 'com.appjam.yaninda',
                   maxZoom: 18,
+                  tileProvider: CachedTileProvider(),
                 ),
+                if (_selected != null)
+                  PolylineLayer(
+                    polylines: [
+                      Polyline(
+                        points: [_userLocation, _selected!.location],
+                        strokeWidth: 4.5,
+                        color: AppColors.primary,
+                        pattern: const StrokePattern.dashed(segments: [10, 10]),
+                      ),
+                    ],
+                  ),
                 MarkerLayer(
                   markers: [
                     Marker(
@@ -220,13 +240,27 @@ class _TopBar extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(
-                    'Toplanma Alanları',
-                    style: AppTypography.headlineMedium.copyWith(
-                      fontSize: 17,
-                      color: AppColors.primaryDeep,
-                      fontWeight: FontWeight.w800,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Toplanma Alanları',
+                        style: AppTypography.headlineMedium.copyWith(
+                          fontSize: 17,
+                          color: AppColors.primaryDeep,
+                          fontWeight: FontWeight.w800,
+                          height: 1.1,
+                        ),
+                      ),
+                      Text(
+                        'Balıkesir · çevrimdışı çalışır',
+                        style: AppTypography.labelSmall.copyWith(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 Container(

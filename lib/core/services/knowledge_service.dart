@@ -36,31 +36,60 @@ class KnowledgeService {
     }
   }
 
-  // Kullanıcının yazdığı mesajla bilgi bankasındaki metinleri eşleştirme
-  String searchRelevantInfo(String query) {
-    if (_chunks.isEmpty) return "";
+  // Token-based skorlama: query'deki her anlamlı kelime için chunk'ın text,
+  // title ve category alanlarında geçen kelime sayısını sayar. Title eşleşmesi
+  // 3x, category 2x, text 1x ağırlığa sahip. En yüksek skorlu chunk döndürülür.
+  Map<String, dynamic>? bestChunk(String query) {
+    if (_chunks.isEmpty) return null;
 
-    final lowerQuery = query.toLowerCase();
+    final tokens = _tokenize(query);
+    if (tokens.isEmpty) return null;
 
-    // Kelime kelime eşleşme kontrolü (Arama kalitesini artırmak için)
-    for (var chunk in _chunks) {
+    Map<String, dynamic>? best;
+    var bestScore = 0;
+
+    for (final chunk in _chunks) {
       final text = chunk['text']?.toString().toLowerCase() ?? '';
       final title = chunk['title']?.toString().toLowerCase() ?? '';
       final category = chunk['category']?.toString().toLowerCase() ?? '';
 
-      // Eğer sorunun içinde başlık, kategori veya metnin kendisi geçiyorsa
-      if (text.contains(lowerQuery) ||
-          title.contains(lowerQuery) ||
-          category.contains(lowerQuery)) {
-        // Yapay zekaya doğrudan ham metni (text) paslayacağız
-        return chunk['text'].toString();
+      var score = 0;
+      for (final token in tokens) {
+        if (title.contains(token)) score += 3;
+        if (category.contains(token)) score += 2;
+        if (text.contains(token)) score += 1;
+      }
+
+      if (score > bestScore) {
+        bestScore = score;
+        best = chunk;
       }
     }
 
-    return ""; // Eşleşen bir şey bulamazsa boş dön
+    return bestScore > 0 ? best : null;
+  }
+
+  String searchRelevantInfo(String query) {
+    final chunk = bestChunk(query);
+    return chunk?['text']?.toString() ?? '';
   }
 
   Future<String> getRelevantContext(String query) async {
     return searchRelevantInfo(query);
+  }
+
+  static const _stopWords = <String>{
+    've', 'ile', 'için', 'bir', 'bu', 'şu', 'da', 'de', 'mi', 'mu', 'mü',
+    'ne', 'nasıl', 'nerede', 'nedir', 'kim', 'kime', 'neden',
+    'var', 'yok', 'beni', 'sana', 'bana', 'olan', 'olur',
+  };
+
+  List<String> _tokenize(String query) {
+    return query
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^\wçğıöşüâîû\s]', unicode: true), ' ')
+        .split(RegExp(r'\s+'))
+        .where((t) => t.length >= 3 && !_stopWords.contains(t))
+        .toList();
   }
 }
