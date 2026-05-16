@@ -327,7 +327,12 @@ class _ActiveViewState extends ConsumerState<_ActiveView>
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
+
+          // Erişilebilirlik göstergeleri (titreşim + sesli komut)
+          const _AccessibilityStatusRow(),
+
+          const SizedBox(height: 16),
 
           // Milestone list
           _MilestoneList(milestones: state.milestones),
@@ -340,6 +345,94 @@ class _ActiveViewState extends ConsumerState<_ActiveView>
                 ref.read(sosControllerProvider.notifier).cancel(),
           ),
           const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+}
+
+/// İşitme + görme engelliler için aktif olan erişilebilirlik özelliklerini
+/// görsel olarak gösteren bilgi şeridi. Yakın çevre veya yardımcı bilebilir.
+class _AccessibilityStatusRow extends StatelessWidget {
+  const _AccessibilityStatusRow();
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Erişilebilirlik durumu: Titreşim aktif. Sesli komut dinleniyor.',
+      child: Row(
+        children: [
+          Expanded(
+            child: _A11yChip(
+              icon: Icons.vibration_rounded,
+              label: 'Titreşim',
+              sublabel: 'Aktif',
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: _A11yChip(
+              icon: Icons.mic_rounded,
+              label: 'Sesli komut',
+              sublabel: '"Durdur" de',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _A11yChip extends StatelessWidget {
+  const _A11yChip({
+    required this.icon,
+    required this.label,
+    required this.sublabel,
+  });
+
+  final IconData icon;
+  final String label;
+  final String sublabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.textOnPrimary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.textOnPrimary.withValues(alpha: 0.16),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: AppColors.textOnPrimary, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: AppTypography.labelSmall.copyWith(
+                    color: AppColors.textOnPrimary.withValues(alpha: 0.7),
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                Text(
+                  sublabel,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textOnPrimary,
+                    fontWeight: FontWeight.w700,
+                    height: 1.2,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

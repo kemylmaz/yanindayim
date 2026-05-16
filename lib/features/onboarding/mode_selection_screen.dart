@@ -275,8 +275,8 @@ class _Hero extends StatelessWidget {
                 ),
               ),
               Container(
-                width: 124,
-                height: 124,
+                width: 132,
+                height: 132,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
@@ -284,15 +284,24 @@ class _Hero extends StatelessWidget {
                     colors: [AppColors.primary, AppColors.primaryDeep],
                   ),
                   shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppColors.textOnPrimary.withValues(alpha: 0.25),
+                    width: 2.5,
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: AppColors.primaryDeep.withValues(alpha: 0.45),
                       blurRadius: 28,
                       offset: const Offset(0, 14),
                     ),
+                    BoxShadow(
+                      color: AppColors.textOnPrimary.withValues(alpha: 0.25),
+                      blurRadius: 10,
+                      offset: const Offset(-4, -4),
+                    ),
                   ],
                 ),
-                child: const _YMonogram(size: 64),
+                child: const _PremiumLogo(size: 64),
               ),
             ],
           ),
@@ -320,52 +329,64 @@ class _Hero extends StatelessWidget {
   }
 }
 
-class _YMonogram extends StatelessWidget {
-  const _YMonogram({this.size = 32});
+class _PremiumLogo extends StatefulWidget {
+  const _PremiumLogo({this.size = 64});
 
   final double size;
 
   @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: size,
-      height: size,
-      child: CustomPaint(painter: _YMonogramPainter()),
-    );
-  }
+  State<_PremiumLogo> createState() => _PremiumLogoState();
 }
 
-class _YMonogramPainter extends CustomPainter {
+class _PremiumLogoState extends State<_PremiumLogo>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1500),
+  )..repeat(reverse: true);
+
   @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-
-    final paint = Paint()
-      ..color = AppColors.textOnPrimary
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = w * 0.14
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    final leftArm = Path()
-      ..moveTo(w * 0.20, h * 0.20)
-      ..quadraticBezierTo(w * 0.30, h * 0.42, w * 0.5, h * 0.55);
-    final rightArm = Path()
-      ..moveTo(w * 0.80, h * 0.20)
-      ..quadraticBezierTo(w * 0.70, h * 0.42, w * 0.5, h * 0.55);
-
-    canvas.drawPath(leftArm, paint);
-    canvas.drawPath(rightArm, paint);
-    canvas.drawLine(
-      Offset(w * 0.5, h * 0.55),
-      Offset(w * 0.5, h * 0.84),
-      paint,
-    );
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
   }
 
   @override
-  bool shouldRepaint(covariant _YMonogramPainter oldDelegate) => false;
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _pulse,
+      builder: (context, _) {
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            // Glowing aura
+            Container(
+              width: widget.size * (1.1 + _pulse.value * 0.15),
+              height: widget.size * (1.1 + _pulse.value * 0.15),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.textOnPrimary.withValues(alpha: 0.15),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.textOnPrimary.withValues(
+                      alpha: 0.25 * _pulse.value,
+                    ),
+                    blurRadius: 16,
+                    spreadRadius: 4,
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.volunteer_activism_rounded,
+              size: widget.size * 0.85,
+              color: AppColors.textOnPrimary,
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
 
 // ──────────────────────────────── swipe tile ────────────────────────────────
@@ -399,8 +420,8 @@ class _SwipeTile extends StatefulWidget {
 
 class _SwipeTileState extends State<_SwipeTile>
     with SingleTickerProviderStateMixin {
-  static const double _tileHeight = 120;
-  static const double _handleSize = 92;
+  static const double _tileHeight = 142; // Increased to fix bottom overflow
+  static const double _handleSize = 100; // Increased to match new height properly
   static const double _padding = 8;
 
   double _drag = 0; // 0..1 (drag progress)
@@ -479,7 +500,9 @@ class _SwipeTileState extends State<_SwipeTile>
             children: [
               // Label content
               Positioned.fill(
-                child: Padding(
+                child: Opacity(
+                  opacity: (1.0 - (_drag * 1.5)).clamp(0.0, 1.0),
+                  child: Padding(
                   padding: EdgeInsets.only(
                     left: widget.direction == SwipeDirection.right
                         ? _handleSize + _padding + 12
@@ -517,27 +540,39 @@ class _SwipeTileState extends State<_SwipeTile>
                         ],
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        widget.mode.description,
-                        style: AppTypography.bodySmall.copyWith(
-                          color: widget.foreground.withValues(alpha: 0.75),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        widget.direction == SwipeDirection.right
-                            ? 'Seçmek için sağa kaydır →'
-                            : '← Seçmek için sola kaydır',
-                        style: AppTypography.labelSmall.copyWith(
-                          color: widget.foreground.withValues(alpha: 0.55),
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.3,
+                      Padding(
+                        padding: const EdgeInsets.only(left: 30),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.mode.description,
+                              style: AppTypography.bodySmall.copyWith(
+                                color: widget.foreground.withValues(alpha: 0.75),
+                                height: 1.2,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              widget.direction == SwipeDirection.right
+                                  ? 'Seçmek için sağa kaydır →'
+                                  : '← Seçmek için sola kaydır',
+                              style: AppTypography.labelSmall.copyWith(
+                                color: widget.foreground.withValues(alpha: 0.55),
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
+            ),
               // Handle
               Positioned(
                 left: handleOffset,

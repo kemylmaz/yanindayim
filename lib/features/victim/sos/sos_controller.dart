@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/services/accessibility_service.dart';
 import '../../../core/services/audio_service.dart';
 import '../../../core/services/emergency_service.dart';
 
@@ -48,12 +49,14 @@ class SosState {
 }
 
 class SosController extends StateNotifier<SosState> {
-  SosController(this._audio, this._emergency) : super(const SosState()) {
+  SosController(this._audio, this._emergency, this._a11y)
+      : super(const SosState()) {
     _tickEverySecond();
   }
 
   final AudioService _audio;
   final EmergencyService _emergency;
+  final AccessibilityService _a11y;
   Timer? _timer;
 
   void _tickEverySecond() {
@@ -74,8 +77,13 @@ class SosController extends StateNotifier<SosState> {
   Future<void> _handleCountdownTick() async {
     final next = state.countdownRemaining - 1;
     if (next <= 0) {
-      // Geri sayım bitti — aktif faza geç, düdük başla.
+      // Geri sayım bitti — aktif faza geç.
+      // Çoklu duyu uyarısı: düdük (işiten), titreşim (işitme engelli),
+      // ekrandaki büyük görsel feedback (sağırlar için zaten görsel).
       await _audio.playWhistle();
+      _a11y.startSosVibration();
+      // Görme engelli için sesli komut dinlemeye başla.
+      unawaited(_a11y.startListening(onStopRecognized: cancel));
       state = state.copyWith(
         phase: SosPhase.active,
         countdownRemaining: 0,
@@ -118,6 +126,8 @@ class SosController extends StateNotifier<SosState> {
   Future<void> cancel() async {
     _timer?.cancel();
     await _audio.stopWhistle();
+    _a11y.stopVibration();
+    unawaited(_a11y.stopListening());
     state = state.copyWith(phase: SosPhase.stopped);
   }
 
@@ -125,11 +135,17 @@ class SosController extends StateNotifier<SosState> {
   void dispose() {
     _timer?.cancel();
     _audio.stopWhistle();
+    _a11y.stopVibration();
+    _a11y.stopListening();
     super.dispose();
   }
 }
 
 final sosControllerProvider =
     StateNotifierProvider.autoDispose<SosController, SosState>((ref) {
-  return SosController(AudioService.instance, EmergencyService.instance);
+  return SosController(
+    AudioService.instance,
+    EmergencyService.instance,
+    AccessibilityService.instance,
+  );
 });

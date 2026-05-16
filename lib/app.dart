@@ -7,6 +7,9 @@ import 'core/theme/app_theme.dart';
 import 'features/auth/rescuer_auth_screen.dart';
 import 'features/auth/victim_auth_screen.dart';
 import 'features/onboarding/mode_selection_screen.dart';
+import 'features/rescuer/home/rescuer_home_screen.dart';
+import 'features/rescuer/triage/triage_screen.dart';
+import 'features/settings/settings_screen.dart';
 import 'features/victim/checkin/checkin_screen.dart';
 import 'features/victim/donation/donation_screen.dart';
 import 'features/victim/home/victim_home_screen.dart';
@@ -32,6 +35,10 @@ final _router = GoRouter(
     GoRoute(
       path: '/auth/victim',
       builder: (context, state) => const VictimAuthScreen(),
+    ),
+    GoRoute(
+      path: '/settings',
+      builder: (context, state) => const SettingsScreen(),
     ),
     GoRoute(
       path: '/auth/rescuer',
@@ -72,10 +79,13 @@ final _router = GoRouter(
     ),
     GoRoute(
       path: '/rescuer',
-      builder: (context, state) => const _PlaceholderScreen(
-        title: 'Kurtarıcı Modu',
-        subtitle: 'Tarama haritası yapım aşamasında...',
-      ),
+      builder: (context, state) => const RescuerHomeScreen(),
+      routes: [
+        GoRoute(
+          path: 'triage',
+          builder: (context, state) => const TriageScreen(),
+        ),
+      ],
     ),
   ],
 );

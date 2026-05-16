@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/theme/colors.dart';
 import '../../core/theme/typography.dart';
@@ -37,8 +38,130 @@ class _VictimAuthScreenState extends State<VictimAuthScreen> {
   }
 
   void _submit() {
-    // TODO(hive): kullanici bilgisini lokal depolamaya yaz.
-    context.go('/victim');
+    if (_mode == AuthMode.signup) {
+      if (_nameCtrl.text.trim().isEmpty) {
+        _showError('Lütfen adınızı ve soyadınızı girin.');
+        return;
+      }
+      if (_phoneCtrl.text.trim().length != 10 || !_phoneCtrl.text.startsWith('5')) {
+        _showError('Lütfen 5 ile başlayan 10 haneli geçerli bir telefon numarası girin.');
+        return;
+      }
+    } else {
+      if (_loginPhoneCtrl.text.trim().length != 10 || !_loginPhoneCtrl.text.startsWith('5')) {
+        _showError('Lütfen 5 ile başlayan 10 haneli telefon numaranızı girin.');
+        return;
+      }
+    }
+
+    final phone = _mode == AuthMode.signup ? _phoneCtrl.text : _loginPhoneCtrl.text;
+    _sendOtp(phone);
+  }
+
+  Future<void> _sendOtp(String phone) async {
+    try {
+      // "+90" is prepended because the form expects 10 digits starting with 5.
+      await Supabase.instance.client.auth.signInWithOtp(phone: '+90$phone');
+      
+      if (!mounted) return;
+      _showOtpVerification(phone);
+    } catch (e) {
+      if (!mounted) return;
+      _showError('SMS gönderilemedi. Hata: ${e.toString()}');
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.critical,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _showOtpVerification(String phone) {
+    final otpCtrl = TextEditingController();
+    
+    // Simulate SMS notification
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('📱 SMS Geldi: Yanında doğrulama kodunuz: 123456'),
+        duration: Duration(seconds: 5),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.info,
+      ),
+    );
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'SMS Doğrulama', 
+          style: AppTypography.headlineMedium.copyWith(color: AppColors.primaryDeep),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('$phone numarasına gönderilen 6 haneli kodu girin.', style: AppTypography.bodySmall),
+            const SizedBox(height: 16),
+            TextField(
+              controller: otpCtrl,
+              keyboardType: TextInputType.number,
+              maxLength: 6,
+              decoration: InputDecoration(
+                hintText: '123456',
+                counterText: '',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('İptal', style: TextStyle(color: AppColors.textSecondary)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () async {
+              if (otpCtrl.text.length == 6) {
+                try {
+                  final res = await Supabase.instance.client.auth.verifyOTP(
+                    phone: '+90$phone',
+                    token: otpCtrl.text,
+                    type: OtpType.sms,
+                  );
+                  
+                  if (res.user != null) {
+                    if (!context.mounted) return;
+                    Navigator.pop(context); // Close dialog
+                    // TODO(hive): kullanici bilgisini lokal depolamaya yaz.
+                    context.go('/victim');
+                  } else {
+                    _showError('Doğrulama başarısız oldu.');
+                  }
+                } catch (e) {
+                  if (!context.mounted) return;
+                  _showError('Hatalı kod veya geçersiz istek.');
+                }
+              } else {
+                _showError('Lütfen 6 haneli kodu girin.');
+              }
+            },
+            child: const Text('Doğrula', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -157,7 +280,7 @@ class _SignupForm extends StatelessWidget {
       children: [
         YanindaTextField(
           label: 'Ad Soyad',
-          hint: 'Kemal Yılmaz',
+          hint: 'Ad - Soyad',
           controller: nameCtrl,
           icon: Icons.person_rounded,
           textCapitalization: TextCapitalization.words,
@@ -165,23 +288,25 @@ class _SignupForm extends StatelessWidget {
         const SizedBox(height: 16),
         YanindaTextField(
           label: 'Telefon',
-          hint: '+90 555 123 45 67',
+          hint: '5XX XXX XX XX',
           controller: phoneCtrl,
           icon: Icons.phone_rounded,
           keyboardType: TextInputType.phone,
           inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'[\d+ ]')),
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(10),
           ],
         ),
         const SizedBox(height: 16),
         YanindaTextField(
-          label: 'Acil iletişim',
-          hint: 'Yakınının telefonu',
+          label: 'Acil iletişim (Opsiyonel)',
+          hint: '5XX XXX XX XX',
           controller: emergencyCtrl,
           icon: Icons.contact_phone_rounded,
           keyboardType: TextInputType.phone,
           inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'[\d+ ]')),
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(10),
           ],
         ),
         const SizedBox(height: 16),
@@ -220,12 +345,13 @@ class _LoginForm extends StatelessWidget {
       children: [
         YanindaTextField(
           label: 'Telefon',
-          hint: '+90 555 123 45 67',
+          hint: '5XX XXX XX XX',
           controller: phoneCtrl,
           icon: Icons.phone_rounded,
           keyboardType: TextInputType.phone,
           inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'[\d+ ]')),
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(10),
           ],
         ),
       ],
@@ -283,32 +409,6 @@ class _TopBar extends StatelessWidget {
               color: AppColors.primaryDeep,
               size: 20,
             ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.shield_rounded,
-                color: AppColors.primary,
-                size: 14,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                'Mağdur modu',
-                style: AppTypography.labelSmall.copyWith(
-                  color: AppColors.primaryDeep,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
           ),
         ),
       ],
