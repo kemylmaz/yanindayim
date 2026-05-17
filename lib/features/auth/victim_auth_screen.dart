@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/theme/colors.dart';
@@ -17,59 +17,213 @@ class VictimAuthScreen extends StatefulWidget {
 }
 
 class _VictimAuthScreenState extends State<VictimAuthScreen> {
-  AuthMode _mode = AuthMode.signup;
+  // İlk açılışta varsayılan: giriş yap (zaten kayıtlı kullanıcı için).
+  AuthMode _mode = AuthMode.login;
+  bool _busy = false;
+  bool _rememberMe = true;
 
   // Signup
   final _nameCtrl = TextEditingController();
-  final _phoneCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
   final _emergencyCtrl = TextEditingController();
   String? _bloodType;
+  int _passwordStrength = 0; // 0..4
 
   // Login
-  final _loginPhoneCtrl = TextEditingController();
+  final _loginEmailCtrl = TextEditingController();
+  final _loginPasswordCtrl = TextEditingController();
+
+  static const _kRememberedEmailKey = 'victim_remembered_email';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRememberedEmail();
+    _passwordCtrl.addListener(_recomputeStrength);
+  }
+
+  Future<void> _loadRememberedEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString(_kRememberedEmailKey);
+    if (email != null && email.isNotEmpty && mounted) {
+      setState(() => _loginEmailCtrl.text = email);
+    }
+  }
 
   @override
   void dispose() {
     _nameCtrl.dispose();
-    _phoneCtrl.dispose();
+    _emailCtrl.dispose();
+    _passwordCtrl.dispose();
     _emergencyCtrl.dispose();
-    _loginPhoneCtrl.dispose();
+    _loginEmailCtrl.dispose();
+    _loginPasswordCtrl.dispose();
     super.dispose();
   }
 
-  void _submit() {
+  void _recomputeStrength() {
+    setState(() => _passwordStrength = _computeStrength(_passwordCtrl.text));
+  }
+
+  /// Şifre gücü 0-4 arası. 0: çok zayıf, 4: çok güçlü.
+  int _computeStrength(String pwd) {
+    if (pwd.isEmpty) return 0;
+    var score = 0;
+    if (pwd.length >= 8) score++;
+    if (pwd.length >= 12) score++;
+    final hasLetter = pwd.contains(RegExp(r'[A-Za-zçğıöşüÇĞİÖŞÜ]'));
+    final hasDigit = pwd.contains(RegExp(r'[0-9]'));
+    final hasSpecial = pwd.contains(RegExp(r'[!@#\$%^&*()_+\-=\[\]{};:,.<>?/|]'));
+    if (hasLetter && (hasDigit || hasSpecial)) score++;
+    if (hasLetter && hasDigit && hasSpecial) score++;
+    return score.clamp(0, 4);
+  }
+
+  /// Şifre kural ihlali varsa hata mesajı, yoksa null döner.
+  String? _validatePasswordRules(String pwd) {
+    if (pwd.length < 8) return 'Şifre en az 8 karakter olmalı.';
+    // Ardışık 4+ rakam yasak (1234, 12345 gibi).
+    if (RegExp(r'\d{4,}').hasMatch(pwd)) {
+      return 'Şifre ardışık 4 veya daha fazla rakam içeremez.';
+    }
+    // Yaygın basit şifreler yasak.
+    const weak = {
+      '12345678', '123456789', '1234567890',
+      'password', 'parola', 'qwerty', 'qwertyui',
+      '11111111', '00000000', 'abcdefgh',
+    };
+    if (weak.contains(pwd.toLowerCase())) {
+      return 'Bu şifre çok yaygın. Daha karmaşık bir şifre seç.';
+    }
+    // Sadece harf veya sadece rakam olmasın.
+    if (RegExp(r'^[A-Za-zçğıöşüÇĞİÖŞÜ]+$').hasMatch(pwd)) {
+      return 'Şifre rakam veya özel karakter içermeli.';
+    }
+    if (RegExp(r'^[0-9]+$').hasMatch(pwd)) {
+      return 'Sadece rakamdan oluşan şifre kullanılamaz.';
+    }
+    return null;
+  }
+
+  Future<void> _submit() async {
+    if (_busy) return;
+
     if (_mode == AuthMode.signup) {
       if (_nameCtrl.text.trim().isEmpty) {
         _showError('Lütfen adınızı ve soyadınızı girin.');
         return;
       }
-      if (_phoneCtrl.text.trim().length != 10 || !_phoneCtrl.text.startsWith('5')) {
-        _showError('Lütfen 5 ile başlayan 10 haneli geçerli bir telefon numarası girin.');
+      if (!_isValidEmail(_emailCtrl.text)) {
+        _showError('Geçerli bir e-posta adresi girin.');
+        return;
+      }
+      final pwdError = _validatePasswordRules(_passwordCtrl.text);
+      if (pwdError != null) {
+        _showError(pwdError);
         return;
       }
     } else {
-      if (_loginPhoneCtrl.text.trim().length != 10 || !_loginPhoneCtrl.text.startsWith('5')) {
-        _showError('Lütfen 5 ile başlayan 10 haneli telefon numaranızı girin.');
+      if (!_isValidEmail(_loginEmailCtrl.text)) {
+        _showError('Geçerli bir e-posta adresi girin.');
+        return;
+      }
+      if (_loginPasswordCtrl.text.isEmpty) {
+        _showError('Şifrenizi girin.');
         return;
       }
     }
 
-    final phone = _mode == AuthMode.signup ? _phoneCtrl.text : _loginPhoneCtrl.text;
-    _sendOtp(phone);
-  }
-
-  Future<void> _sendOtp(String phone) async {
+    setState(() => _busy = true);
     try {
-      // "+90" is prepended because the form expects 10 digits starting with 5.
-      await Supabase.instance.client.auth.signInWithOtp(phone: '+90$phone');
-      
-      if (!mounted) return;
-      _showOtpVerification(phone);
+      if (_mode == AuthMode.signup) {
+        final res = await Supabase.instance.client.auth
+            .signUp(
+              email: _emailCtrl.text.trim(),
+              password: _passwordCtrl.text,
+              data: {
+                'full_name': _nameCtrl.text.trim(),
+                'role': 'victim',
+                'blood_type': _bloodType,
+                'emergency_contact': _emergencyCtrl.text.trim(),
+              },
+            )
+            .timeout(const Duration(seconds: 20));
+        if (!mounted) return;
+        if (res.user != null) {
+          await _persistRememberedEmail(_emailCtrl.text.trim());
+          _showInfo(
+            res.session != null
+                ? 'Hesap oluşturuldu, giriş yapıldı.'
+                : 'Doğrulama e-postası gönderildi. Posta kutunuzu kontrol edin.',
+          );
+          if (mounted) context.go('/victim');
+        } else {
+          _showError('Kayıt başarısız.');
+        }
+      } else {
+        final res = await Supabase.instance.client.auth
+            .signInWithPassword(
+              email: _loginEmailCtrl.text.trim(),
+              password: _loginPasswordCtrl.text,
+            )
+            .timeout(const Duration(seconds: 20));
+        if (!mounted) return;
+        if (res.user != null) {
+          await _persistRememberedEmail(
+            _rememberMe ? _loginEmailCtrl.text.trim() : null,
+          );
+          if (mounted) context.go('/victim');
+        } else {
+          _showError('Giriş başarısız.');
+        }
+      }
+    } on AuthException catch (e) {
+      _showError(e.message);
     } catch (e) {
-      if (!mounted) return;
-      _showError('SMS gönderilemedi. Hata: ${e.toString()}');
+      _showError(
+          'Bağlantı sorunu — internetinizi kontrol edip tekrar deneyin.');
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
+
+  Future<void> _persistRememberedEmail(String? email) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (email == null || email.isEmpty) {
+      await prefs.remove(_kRememberedEmailKey);
+    } else {
+      await prefs.setString(_kRememberedEmailKey, email);
+    }
+  }
+
+  Future<void> _sendPasswordReset() async {
+    final email = _loginEmailCtrl.text.trim();
+    if (!_isValidEmail(email)) {
+      _showError(
+        'Önce e-posta alanına geçerli bir adres girin, sonra "Şifremi unuttum"a basın.',
+      );
+      return;
+    }
+    setState(() => _busy = true);
+    try {
+      await Supabase.instance.client.auth
+          .resetPasswordForEmail(email)
+          .timeout(const Duration(seconds: 15));
+      if (!mounted) return;
+      _showInfo(
+          'Şifre sıfırlama bağlantısı $email adresine gönderildi.');
+    } on AuthException catch (e) {
+      _showError(e.message);
+    } catch (_) {
+      _showError('Bağlantı sorunu — tekrar deneyin.');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  bool _isValidEmail(String value) =>
+      RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(value.trim());
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -81,85 +235,12 @@ class _VictimAuthScreenState extends State<VictimAuthScreen> {
     );
   }
 
-  void _showOtpVerification(String phone) {
-    final otpCtrl = TextEditingController();
-    
-    // Simulate SMS notification
+  void _showInfo(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('📱 SMS Geldi: Yanında doğrulama kodunuz: 123456'),
-        duration: Duration(seconds: 5),
-        behavior: SnackBarBehavior.floating,
+      SnackBar(
+        content: Text(message),
         backgroundColor: AppColors.info,
-      ),
-    );
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          'SMS Doğrulama', 
-          style: AppTypography.headlineMedium.copyWith(color: AppColors.primaryDeep),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text('$phone numarasına gönderilen 6 haneli kodu girin.', style: AppTypography.bodySmall),
-            const SizedBox(height: 16),
-            TextField(
-              controller: otpCtrl,
-              keyboardType: TextInputType.number,
-              maxLength: 6,
-              decoration: InputDecoration(
-                hintText: '123456',
-                counterText: '',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('İptal', style: TextStyle(color: AppColors.textSecondary)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            onPressed: () async {
-              if (otpCtrl.text.length == 6) {
-                try {
-                  final res = await Supabase.instance.client.auth.verifyOTP(
-                    phone: '+90$phone',
-                    token: otpCtrl.text,
-                    type: OtpType.sms,
-                  );
-                  
-                  if (res.user != null) {
-                    if (!context.mounted) return;
-                    Navigator.pop(context); // Close dialog
-                    // TODO(hive): kullanici bilgisini lokal depolamaya yaz.
-                    context.go('/victim');
-                  } else {
-                    _showError('Doğrulama başarısız oldu.');
-                  }
-                } catch (e) {
-                  if (!context.mounted) return;
-                  _showError('Hatalı kod veya geçersiz istek.');
-                }
-              } else {
-                _showError('Lütfen 6 haneli kodu girin.');
-              }
-            },
-            child: const Text('Doğrula', style: TextStyle(color: Colors.white)),
-          ),
-        ],
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
@@ -173,78 +254,97 @@ class _VictimAuthScreenState extends State<VictimAuthScreen> {
           const _BackgroundGradient(),
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _TopBar(onBack: () => context.go('/onboarding')),
-                  const SizedBox(height: 24),
-                  Text(
-                    _mode == AuthMode.signup
-                        ? 'Yanında olmaya hazırız.'
-                        : 'Tekrar hoş geldin.',
-                    style: AppTypography.displayMedium.copyWith(
-                      color: AppColors.primaryDeep,
-                      height: 1.1,
-                    ),
-                  ).animate(key: ValueKey(_mode)).fadeIn(duration: 250.ms),
-                  const SizedBox(height: 8),
-                  Text(
-                    _mode == AuthMode.signup
-                        ? 'Mağdur modunda devam etmek için birkaç bilgi alalım.'
-                        : 'Telefon numaranla devam et.',
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ).animate(key: ValueKey('subtitle-$_mode'))
-                      .fadeIn(duration: 250.ms),
-                  const SizedBox(height: 24),
-                  AuthModeToggle(
-                    mode: _mode,
-                    onChanged: (mode) => setState(() => _mode = mode),
-                  ),
-                  const SizedBox(height: 24),
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 250),
-                    child: _mode == AuthMode.signup
-                        ? _SignupForm(
-                            key: const ValueKey('signup'),
-                            nameCtrl: _nameCtrl,
-                            phoneCtrl: _phoneCtrl,
-                            emergencyCtrl: _emergencyCtrl,
-                            bloodType: _bloodType,
-                            onBloodTypeChanged: (v) =>
-                                setState(() => _bloodType = v),
-                          )
-                        : _LoginForm(
-                            key: const ValueKey('login'),
-                            phoneCtrl: _loginPhoneCtrl,
-                          ),
-                  ),
-                  const SizedBox(height: 28),
-                  _PrimaryButton(
-                    label: _mode == AuthMode.signup ? 'Hesap oluştur' : 'Giriş yap',
-                    onTap: _submit,
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.lock_rounded,
-                        size: 14,
+              padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: MediaQuery.of(context).size.height -
+                      MediaQuery.of(context).padding.top -
+                      40,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _TopBar(onBack: () => context.go('/onboarding')),
+                    const SizedBox(height: 14),
+                    Text(
+                      _mode == AuthMode.signup
+                          ? 'Yanındayım\'a hoş geldin.'
+                          : 'Tekrar hoş geldin.',
+                      style: AppTypography.displayMedium.copyWith(
+                        color: AppColors.primaryDeep,
+                        height: 1.1,
+                      ),
+                    ).animate(key: ValueKey(_mode)).fadeIn(duration: 250.ms),
+                    const SizedBox(height: 6),
+                    Text(
+                      _mode == AuthMode.signup
+                          ? 'Mağdur modunda devam etmek için birkaç bilgi alalım.'
+                          : 'E-posta ve şifrenle devam et.',
+                      style: AppTypography.bodyMedium.copyWith(
                         color: AppColors.textSecondary,
                       ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Verileriniz sadece bu cihazda kalır.',
-                        style: AppTypography.bodySmall.copyWith(
+                    )
+                        .animate(key: ValueKey('subtitle-$_mode'))
+                        .fadeIn(duration: 250.ms),
+                    const SizedBox(height: 14),
+                    AuthModeToggle(
+                      mode: _mode,
+                      onChanged: (mode) => setState(() => _mode = mode),
+                    ),
+                    const SizedBox(height: 14),
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 250),
+                      child: _mode == AuthMode.signup
+                          ? _SignupForm(
+                              key: const ValueKey('signup'),
+                              nameCtrl: _nameCtrl,
+                              emailCtrl: _emailCtrl,
+                              passwordCtrl: _passwordCtrl,
+                              emergencyCtrl: _emergencyCtrl,
+                              bloodType: _bloodType,
+                              onBloodTypeChanged: (v) =>
+                                  setState(() => _bloodType = v),
+                              strength: _passwordStrength,
+                            )
+                          : _LoginForm(
+                              key: const ValueKey('login'),
+                              emailCtrl: _loginEmailCtrl,
+                              passwordCtrl: _loginPasswordCtrl,
+                              rememberMe: _rememberMe,
+                              onRememberChanged: (v) =>
+                                  setState(() => _rememberMe = v),
+                              onForgotPassword: _sendPasswordReset,
+                            ),
+                    ),
+                    const SizedBox(height: 14),
+                    _PrimaryButton(
+                      label: _busy
+                          ? 'Lütfen bekleyin…'
+                          : (_mode == AuthMode.signup
+                              ? 'Hesap oluştur'
+                              : 'Giriş yap'),
+                      onTap: _submit,
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.mark_email_read_rounded,
+                          size: 14,
                           color: AppColors.textSecondary,
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                        const SizedBox(width: 6),
+                        Text(
+                          'Doğrulama bağlantısı e-posta ile gelir.',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -260,17 +360,21 @@ class _SignupForm extends StatelessWidget {
   const _SignupForm({
     super.key,
     required this.nameCtrl,
-    required this.phoneCtrl,
+    required this.emailCtrl,
+    required this.passwordCtrl,
     required this.emergencyCtrl,
     required this.bloodType,
     required this.onBloodTypeChanged,
+    required this.strength,
   });
 
   final TextEditingController nameCtrl;
-  final TextEditingController phoneCtrl;
+  final TextEditingController emailCtrl;
+  final TextEditingController passwordCtrl;
   final TextEditingController emergencyCtrl;
   final String? bloodType;
   final ValueChanged<String?> onBloodTypeChanged;
+  final int strength;
 
   @override
   Widget build(BuildContext context) {
@@ -285,31 +389,33 @@ class _SignupForm extends StatelessWidget {
           icon: Icons.person_rounded,
           textCapitalization: TextCapitalization.words,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 10),
         YanindaTextField(
-          label: 'Telefon',
-          hint: '5XX XXX XX XX',
-          controller: phoneCtrl,
-          icon: Icons.phone_rounded,
-          keyboardType: TextInputType.phone,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(10),
-          ],
+          label: 'E-posta',
+          hint: 'isim@ornek.com',
+          controller: emailCtrl,
+          icon: Icons.email_rounded,
+          keyboardType: TextInputType.emailAddress,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 10),
+        YanindaTextField(
+          label: 'Şifre',
+          hint: 'En az 8 karakter, harf + rakam/özel',
+          controller: passwordCtrl,
+          icon: Icons.lock_rounded,
+          obscureText: true,
+        ),
+        const SizedBox(height: 8),
+        _PasswordStrengthBar(strength: strength),
+        const SizedBox(height: 10),
         YanindaTextField(
           label: 'Acil iletişim (Opsiyonel)',
           hint: '5XX XXX XX XX',
           controller: emergencyCtrl,
           icon: Icons.contact_phone_rounded,
           keyboardType: TextInputType.phone,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(10),
-          ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 10),
         YanindaDropdown<String>(
           label: 'Kan grubu (opsiyonel)',
           icon: Icons.bloodtype_rounded,
@@ -332,10 +438,77 @@ class _SignupForm extends StatelessWidget {
   }
 }
 
-class _LoginForm extends StatelessWidget {
-  const _LoginForm({super.key, required this.phoneCtrl});
+class _PasswordStrengthBar extends StatelessWidget {
+  const _PasswordStrengthBar({required this.strength});
 
-  final TextEditingController phoneCtrl;
+  final int strength; // 0..4
+
+  static const _labels = ['Çok zayıf', 'Zayıf', 'Orta', 'İyi', 'Güçlü'];
+
+  Color _color() {
+    switch (strength) {
+      case 0:
+        return AppColors.border;
+      case 1:
+        return AppColors.critical;
+      case 2:
+        return AppColors.amber;
+      case 3:
+        return AppColors.teal;
+      default:
+        return AppColors.primary;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _color();
+    final pct = (strength / 4).clamp(0.0, 1.0);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(999),
+          child: Stack(
+            children: [
+              Container(height: 6, color: AppColors.border),
+              AnimatedFractionallySizedBox(
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeOutCubic,
+                widthFactor: pct,
+                child: Container(height: 6, color: color),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          strength == 0 ? 'Şifre gücü' : _labels[strength],
+          style: AppTypography.labelSmall.copyWith(
+            color: strength == 0 ? AppColors.textSecondary : color,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _LoginForm extends StatelessWidget {
+  const _LoginForm({
+    super.key,
+    required this.emailCtrl,
+    required this.passwordCtrl,
+    required this.rememberMe,
+    required this.onRememberChanged,
+    required this.onForgotPassword,
+  });
+
+  final TextEditingController emailCtrl;
+  final TextEditingController passwordCtrl;
+  final bool rememberMe;
+  final ValueChanged<bool> onRememberChanged;
+  final VoidCallback onForgotPassword;
 
   @override
   Widget build(BuildContext context) {
@@ -344,14 +517,75 @@ class _LoginForm extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         YanindaTextField(
-          label: 'Telefon',
-          hint: '5XX XXX XX XX',
-          controller: phoneCtrl,
-          icon: Icons.phone_rounded,
-          keyboardType: TextInputType.phone,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(10),
+          label: 'E-posta',
+          hint: 'isim@ornek.com',
+          controller: emailCtrl,
+          icon: Icons.email_rounded,
+          keyboardType: TextInputType.emailAddress,
+        ),
+        const SizedBox(height: 10),
+        YanindaTextField(
+          label: 'Şifre',
+          hint: 'Şifreniz',
+          controller: passwordCtrl,
+          icon: Icons.lock_rounded,
+          obscureText: true,
+        ),
+        const SizedBox(height: 6),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Parolamı hatırla
+            InkWell(
+              onTap: () => onRememberChanged(!rememberMe),
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: Checkbox(
+                        value: rememberMe,
+                        onChanged: (v) => onRememberChanged(v ?? false),
+                        activeColor: AppColors.primary,
+                        materialTapTargetSize:
+                            MaterialTapTargetSize.shrinkWrap,
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Parolamı hatırla',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Şifremi unuttum
+            TextButton(
+              onPressed: onForgotPassword,
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                minimumSize: const Size(0, 0),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(
+                'Şifremi unuttum',
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
+                  decoration: TextDecoration.underline,
+                  decorationColor: AppColors.primary,
+                ),
+              ),
+            ),
           ],
         ),
       ],
@@ -442,7 +676,7 @@ class _PrimaryButtonState extends State<_PrimaryButton> {
         onTap: widget.onTap,
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 20),
+          padding: const EdgeInsets.symmetric(vertical: 18),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topLeft,

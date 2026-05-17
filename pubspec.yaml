@@ -52,6 +52,22 @@ dependencies:
   # Permissions
   permission_handler: ^11.3.0
 
+  # File picker (kurtarıcı e-Devlet QR PDF yüklemesi)
+  file_picker: ^8.0.0
+
+  # Sağlık Kartı QR kod oluşturma
+  qr_flutter: ^4.1.0
+
+  # SOS aktifken ekranı açık tut (Always-On benzeri)
+  wakelock_plus: ^1.2.5
+
+  # Rehberden kişi seçimi (Güvendeyim ekranı)
+  flutter_contacts: ^1.1.9
+
+  # AR Beacon Tarama: kamera + manyetometre (pusula)
+  camera: ^0.11.0
+  flutter_compass: ^0.8.0
+
   # UI - fonts and animations
   google_fonts: ^6.2.1
   flutter_animate: ^4.5.0
@@ -83,3 +99,9 @@ flutter:
     - assets/maps/
     - assets/knowledge_base/chunks.json
     - assets/images/
+
+  fonts:
+    - family: YesevaOne
+      fonts:
+        - asset: assets/fonts/YesevaOne-Regular.ttf
+

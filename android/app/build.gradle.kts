@@ -32,6 +32,11 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+            // R8 / minify kapalı — flutter_gemma + mediapipe sınıflarının
+            // proguard rule'ları olmadığı için minify hata veriyor; demo için
+            // boyut/perf değil, çalışabilirlik öncelikli.
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }

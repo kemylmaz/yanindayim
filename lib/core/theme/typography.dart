@@ -13,6 +13,23 @@ import 'colors.dart';
 class AppTypography {
   AppTypography._();
 
+  /// Uygulama logosu için özel font — Yeseva One (klasik display serif).
+  /// "Yanındayım" yazısının her kullanımında bu style kullanılır.
+  /// Yerel asset olarak yüklü (offline çalışır).
+  static TextStyle logoTitle({
+    double fontSize = 64,
+    Color? color,
+    double letterSpacing = 0,
+  }) =>
+      TextStyle(
+        fontFamily: 'YesevaOne',
+        fontSize: fontSize,
+        fontWeight: FontWeight.w400,
+        height: 1.0,
+        letterSpacing: letterSpacing,
+        color: color ?? AppColors.primaryDeep,
+      );
+
   // Başlık (Plus Jakarta Sans)
   static TextStyle displayLarge = GoogleFonts.plusJakartaSans(
     fontSize: 40,

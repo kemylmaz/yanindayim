@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -8,6 +11,7 @@ import '../../../core/models/victim_beacon.dart';
 import '../../../core/services/beacon_scanner_service.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/theme/typography.dart';
+import '../../victim/map/cached_tile_provider.dart';
 
 class RescuerHomeScreen extends StatefulWidget {
   const RescuerHomeScreen({super.key});
@@ -21,13 +25,68 @@ class _RescuerHomeScreenState extends State<RescuerHomeScreen> {
   Stream<List<VictimBeacon>>? _stream;
   List<VictimBeacon> _beacons = const [];
   VictimBeacon? _selected;
+  // Kurtarılmış olarak işaretlenen beacon ID'leri — listeden ve haritadan düşürülür.
+  final Set<String> _rescuedIds = <String>{};
 
-  LatLng get _userLocation => BeaconScannerService.demoCenter;
+  LatLng _userLocation = BeaconScannerService.demoCenter;
+  bool _gpsReady = false;
+  StreamSubscription<Position>? _posSub;
 
   @override
   void initState() {
     super.initState();
     _stream = BeaconScannerService.instance.scan();
+    _initLocation();
+  }
+
+  @override
+  void dispose() {
+    _posSub?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _initLocation() async {
+    try {
+      var perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied) {
+        perm = await Geolocator.requestPermission();
+      }
+      if (perm == LocationPermission.denied ||
+          perm == LocationPermission.deniedForever) {
+        return;
+      }
+      if (!await Geolocator.isLocationServiceEnabled()) return;
+
+      // İlk konumu hızlı al
+      try {
+        final pos = await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.high,
+            timeLimit: Duration(seconds: 8),
+          ),
+        );
+        if (!mounted) return;
+        setState(() {
+          _userLocation = LatLng(pos.latitude, pos.longitude);
+          _gpsReady = true;
+        });
+        _mapController.move(_userLocation, 16);
+      } catch (_) {}
+
+      // Stream canlı güncelle
+      _posSub = Geolocator.getPositionStream(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 5,
+        ),
+      ).listen((p) {
+        if (!mounted) return;
+        setState(() {
+          _userLocation = LatLng(p.latitude, p.longitude);
+          _gpsReady = true;
+        });
+      });
+    } catch (_) {}
   }
 
   double _distanceTo(VictimBeacon b) {
@@ -57,6 +116,22 @@ class _RescuerHomeScreenState extends State<RescuerHomeScreen> {
     _mapController.move(b.location, 17);
   }
 
+  void _markRescued(VictimBeacon b) {
+    setState(() {
+      _rescuedIds.add(b.anonymousId);
+      if (_selected?.anonymousId == b.anonymousId) {
+        _selected = null;
+      }
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Mağdur ${b.anonymousId} kurtarıldı olarak işaretlendi.'),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.primary,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,7 +142,9 @@ class _RescuerHomeScreenState extends State<RescuerHomeScreen> {
           stream: _stream,
           builder: (context, snapshot) {
             if (snapshot.hasData) _beacons = snapshot.data!;
-            final sorted = List<VictimBeacon>.from(_beacons)
+            final sorted = _beacons
+                .where((b) => !_rescuedIds.contains(b.anonymousId))
+                .toList()
               ..sort((a, b) => _distanceTo(a).compareTo(_distanceTo(b)));
 
             return Stack(
@@ -79,7 +156,10 @@ class _RescuerHomeScreenState extends State<RescuerHomeScreen> {
                   right: 16,
                   child: _TopBar(
                     activeCount: sorted.length,
-                    onBack: () => context.go('/onboarding'),
+                    gpsReady: _gpsReady,
+                    onBack: () => context.canPop()
+                        ? context.pop()
+                        : context.go('/rescuer'),
                   ),
                 ),
                 Positioned(
@@ -106,6 +186,7 @@ class _RescuerHomeScreenState extends State<RescuerHomeScreen> {
                         durationOf: (b) => _humanDuration(b.broadcastDuration),
                         onSelect: _focus,
                         onClose: () => setState(() => _selected = null),
+                        onMarkRescued: _markRescued,
                       ),
                     ),
                   ),
@@ -131,6 +212,7 @@ class _RescuerHomeScreenState extends State<RescuerHomeScreen> {
         TileLayer(
           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
           userAgentPackageName: 'com.appjam.yaninda',
+          tileProvider: CachedTileProvider(),
         ),
         MarkerLayer(
           markers: [
@@ -165,9 +247,14 @@ class _RescuerHomeScreenState extends State<RescuerHomeScreen> {
 // ──────────────────────────────── top bar ───────────────────────────────────
 
 class _TopBar extends StatelessWidget {
-  const _TopBar({required this.activeCount, required this.onBack});
+  const _TopBar({
+    required this.activeCount,
+    required this.gpsReady,
+    required this.onBack,
+  });
 
   final int activeCount;
+  final bool gpsReady;
   final VoidCallback onBack;
 
   @override
@@ -208,12 +295,26 @@ class _TopBar extends StatelessWidget {
                           height: 1.1,
                         ),
                       ),
-                      Text(
-                        '$activeCount sinyal alınıyor · BLE 2,4 GHz',
-                        style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
-                          fontSize: 11,
-                        ),
+                      Row(
+                        children: [
+                          Icon(
+                            gpsReady
+                                ? Icons.gps_fixed_rounded
+                                : Icons.gps_not_fixed_rounded,
+                            size: 11,
+                            color: gpsReady
+                                ? AppColors.primary
+                                : AppColors.amber,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '$activeCount sinyal · ${gpsReady ? "GPS aktif" : "GPS aranıyor"}',
+                            style: AppTypography.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -506,6 +607,7 @@ class _BottomSheet extends StatelessWidget {
     required this.durationOf,
     required this.onSelect,
     required this.onClose,
+    required this.onMarkRescued,
   });
 
   final VictimBeacon? selected;
@@ -514,6 +616,7 @@ class _BottomSheet extends StatelessWidget {
   final String Function(VictimBeacon) durationOf;
   final void Function(VictimBeacon) onSelect;
   final VoidCallback onClose;
+  final void Function(VictimBeacon) onMarkRescued;
 
   @override
   Widget build(BuildContext context) {
@@ -545,6 +648,7 @@ class _BottomSheet extends StatelessWidget {
                   distance: distanceTo(selected!),
                   duration: durationOf(selected!),
                   onClose: onClose,
+                  onMarkRescued: () => onMarkRescued(selected!),
                 ),
         ),
       ),
@@ -753,12 +857,14 @@ class _DetailView extends StatelessWidget {
     required this.distance,
     required this.duration,
     required this.onClose,
+    required this.onMarkRescued,
   });
 
   final VictimBeacon beacon;
   final String distance;
   final String duration;
   final VoidCallback onClose;
+  final VoidCallback onMarkRescued;
 
   @override
   Widget build(BuildContext context) {
@@ -874,9 +980,7 @@ class _DetailView extends StatelessWidget {
               _SecondaryButton(
                 label: 'Kurtarıldı',
                 icon: Icons.check_circle_rounded,
-                onTap: () {
-                  // TODO: Beacon kurtarildi olarak isaretle ve listeden cikar.
-                },
+                onTap: onMarkRescued,
               ),
             ],
           ),

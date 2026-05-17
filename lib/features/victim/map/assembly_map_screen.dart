@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -23,14 +26,107 @@ class _AssemblyMapScreenState extends State<AssemblyMapScreen> {
   List<_AssemblyArea> _areas = const [];
   _AssemblyArea? _selected;
 
-  // Demo amaçlı sabit kullanıcı konumu (Balıkesir merkez / Atatürk Parkı).
-  // Production: geolocator ile gerçek konum okunur.
-  static const _userLocation = LatLng(39.6505, 27.8732);
+  // Konum izni yoksa veya alınamadıysa Balıkesir merkez fallback.
+  static const _fallbackLocation = LatLng(39.6505, 27.8732);
+  LatLng _userLocation = _fallbackLocation;
+  bool _gpsReady = false;
+  bool _hasArrived = false;
+  StreamSubscription<Position>? _posSub;
 
   @override
   void initState() {
     super.initState();
     _loadAreas();
+    _initLocation();
+  }
+
+  @override
+  void dispose() {
+    _posSub?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _initLocation() async {
+    try {
+      // İzin kontrol + iste
+      var perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied) {
+        perm = await Geolocator.requestPermission();
+      }
+      if (perm == LocationPermission.denied ||
+          perm == LocationPermission.deniedForever) {
+        return; // sessiz fallback — sabit demo konum kullanılır
+      }
+
+      // Servis açık mı?
+      final enabled = await Geolocator.isLocationServiceEnabled();
+      if (!enabled) return;
+
+      // İlk konum
+      try {
+        final pos = await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.high,
+            timeLimit: Duration(seconds: 10),
+          ),
+        );
+        if (!mounted) return;
+        setState(() {
+          _userLocation = LatLng(pos.latitude, pos.longitude);
+          _gpsReady = true;
+        });
+        _mapController.move(_userLocation, 14);
+        _resortAreas();
+      } catch (_) {
+        // İlk lokalizasyon başarısız — stream'e güvenelim
+      }
+
+      // Canlı stream — 5m'de bir veya 2 sn'de bir
+      _posSub = Geolocator.getPositionStream(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 5,
+        ),
+      ).listen((pos) {
+        if (!mounted) return;
+        setState(() {
+          _userLocation = LatLng(pos.latitude, pos.longitude);
+          _gpsReady = true;
+        });
+        _checkArrived();
+        _resortAreas();
+      });
+    } catch (_) {
+      // sessiz fallback
+    }
+  }
+
+  void _resortAreas() {
+    if (_areas.isEmpty) return;
+    final sorted = List<_AssemblyArea>.from(_areas)
+      ..sort((a, b) =>
+          _distance(_userLocation, a.location)
+              .compareTo(_distance(_userLocation, b.location)));
+    _areas = sorted;
+  }
+
+  /// Seçili hedefe yaklaştık mı? 50m içinde "Ulaştın" feedback ver.
+  void _checkArrived() {
+    if (_selected == null || _hasArrived) return;
+    final d = _distance(_userLocation, _selected!.location);
+    if (d < 50) {
+      setState(() => _hasArrived = true);
+      HapticFeedback.heavyImpact();
+      Future.delayed(const Duration(milliseconds: 250), HapticFeedback.heavyImpact);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${_selected!.name} toplanma alanına ulaştınız!'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppColors.primary,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    }
   }
 
   Future<void> _loadAreas() async {
@@ -55,7 +151,6 @@ class _AssemblyMapScreenState extends State<AssemblyMapScreen> {
             location: LatLng(coords[1].toDouble(), coords[0].toDouble()),
           );
         })
-        // Demo kapsamı: yalnızca Balıkesir toplanma alanları gösterilir.
         .where((a) => a.city.toLowerCase() == 'balikesir')
         .toList();
 
@@ -71,14 +166,49 @@ class _AssemblyMapScreenState extends State<AssemblyMapScreen> {
     return distance.as(LengthUnit.Meter, a, b);
   }
 
+  /// Kullanıcı konumundan hedef konuma kuzey-doğu eksenindeki açı (0-360°).
+  static double _bearing(LatLng from, LatLng to) {
+    final lat1 = from.latitude * math.pi / 180;
+    final lat2 = to.latitude * math.pi / 180;
+    final dLon = (to.longitude - from.longitude) * math.pi / 180;
+    final y = math.sin(dLon) * math.cos(lat2);
+    final x = math.cos(lat1) * math.sin(lat2) -
+        math.sin(lat1) * math.cos(lat2) * math.cos(dLon);
+    final brng = math.atan2(y, x) * 180 / math.pi;
+    return (brng + 360) % 360;
+  }
+
+  /// Bearing değerini Türkçe yön kelimesine çevir.
+  static String _bearingToText(double bearing) {
+    const directions = [
+      'kuzeye', 'kuzeydoğuya', 'doğuya', 'güneydoğuya',
+      'güneye', 'güneybatıya', 'batıya', 'kuzeybatıya',
+    ];
+    final index = ((bearing + 22.5) / 45).floor() % 8;
+    return directions[index];
+  }
+
   String _humanDistance(double meters) {
     if (meters < 1000) return '${meters.round()} m';
     return '${(meters / 1000).toStringAsFixed(1)} km';
   }
 
+  String _humanDuration(double meters) {
+    // Yürüyüş hızı 5 km/h = 83 m/dk
+    final mins = (meters / 83).ceil();
+    if (mins < 1) return '< 1 dk';
+    if (mins < 60) return '$mins dk';
+    final hours = mins ~/ 60;
+    final remaining = mins % 60;
+    return '$hours sa $remaining dk';
+  }
+
   void _focusArea(_AssemblyArea area) {
-    setState(() => _selected = area);
-    _mapController.move(area.location, 14);
+    setState(() {
+      _selected = area;
+      _hasArrived = false;
+    });
+    _mapController.move(area.location, 15);
   }
 
   @override
@@ -152,7 +282,9 @@ class _AssemblyMapScreenState extends State<AssemblyMapScreen> {
               top: 16,
               right: 16,
               child: _TopBar(
-                onBack: () => context.go('/victim'),
+                onBack: () => context.canPop()
+                    ? context.pop()
+                    : context.go('/victim'),
               ),
             ),
             // Bottom panel
@@ -181,16 +313,32 @@ class _AssemblyMapScreenState extends State<AssemblyMapScreen> {
                       child: _selected == null
                           ? _NearestList(
                               areas: nearest,
-                              distanceTo: (a) =>
-                                  _humanDistance(_distance(_userLocation, a.location)),
+                              distanceTo: (a) => _humanDistance(
+                                _distance(_userLocation, a.location),
+                              ),
+                              gpsReady: _gpsReady,
                               onTap: _focusArea,
                             )
                           : _SelectedAreaPanel(
                               area: _selected!,
+                              distanceMeters:
+                                  _distance(_userLocation, _selected!.location),
                               distance: _humanDistance(
                                 _distance(_userLocation, _selected!.location),
                               ),
-                              onClose: () => setState(() => _selected = null),
+                              duration: _humanDuration(
+                                _distance(_userLocation, _selected!.location),
+                              ),
+                              bearingDeg:
+                                  _bearing(_userLocation, _selected!.location),
+                              bearingText: _bearingToText(
+                                _bearing(_userLocation, _selected!.location),
+                              ),
+                              hasArrived: _hasArrived,
+                              onClose: () => setState(() {
+                                _selected = null;
+                                _hasArrived = false;
+                              }),
                             ),
                     ),
                   ),
@@ -426,11 +574,13 @@ class _NearestList extends StatelessWidget {
   const _NearestList({
     required this.areas,
     required this.distanceTo,
+    required this.gpsReady,
     required this.onTap,
   });
 
   final List<_AssemblyArea> areas;
   final String Function(_AssemblyArea) distanceTo;
+  final bool gpsReady;
   final void Function(_AssemblyArea) onTap;
 
   @override
@@ -457,6 +607,37 @@ class _NearestList extends StatelessWidget {
                 color: AppColors.primaryDeep,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 1.5,
+              ),
+            ),
+            const Spacer(),
+            // GPS durum rozeti
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: (gpsReady ? AppColors.primary : AppColors.amber)
+                    .withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    gpsReady
+                        ? Icons.gps_fixed_rounded
+                        : Icons.gps_not_fixed_rounded,
+                    size: 12,
+                    color: gpsReady ? AppColors.primary : AppColors.amber,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    gpsReady ? 'GPS aktif' : 'GPS bekleniyor',
+                    style: AppTypography.labelSmall.copyWith(
+                      color: gpsReady ? AppColors.primary : AppColors.amber,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -569,15 +750,30 @@ class _SelectedAreaPanel extends StatelessWidget {
   const _SelectedAreaPanel({
     required this.area,
     required this.distance,
+    required this.distanceMeters,
+    required this.bearingDeg,
+    required this.bearingText,
+    required this.duration,
+    required this.hasArrived,
     required this.onClose,
   });
 
   final _AssemblyArea area;
   final String distance;
+  final double distanceMeters;
+  final double bearingDeg;
+  final String bearingText;
+  final String duration;
+  final bool hasArrived;
   final VoidCallback onClose;
 
   @override
   Widget build(BuildContext context) {
+    final closeToTarget = distanceMeters < 200;
+    final navColor = hasArrived
+        ? AppColors.primary
+        : (closeToTarget ? AppColors.teal : AppColors.amber);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -629,15 +825,78 @@ class _SelectedAreaPanel extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 14),
-        Row(
+        const SizedBox(height: 12),
+
+        // Yön kartı — pusula oku + adım adım tarif
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                navColor.withValues(alpha: 0.12),
+                navColor.withValues(alpha: 0.04),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: navColor.withValues(alpha: 0.4)),
+          ),
+          child: Row(
+            children: [
+              // Pusula
+              _CompassArrow(
+                bearing: bearingDeg,
+                color: navColor,
+                arrived: hasArrived,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      hasArrived
+                          ? 'Toplanma alanına ulaştın'
+                          : '$distance $bearingText yürü',
+                      style: AppTypography.bodyLarge.copyWith(
+                        color: AppColors.primaryDeep,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 15,
+                        height: 1.25,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      hasArrived
+                          ? 'Beacon sinyalin aktifse kurtarıcılar konumunu görür.'
+                          : 'Yürüyüş ile yaklaşık $duration · çevrimdışı tarif',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+
+        Wrap(
+          spacing: 8,
+          runSpacing: 6,
           children: [
             _Chip(
               icon: Icons.straighten_rounded,
               label: distance,
               color: AppColors.primary,
             ),
-            const SizedBox(width: 8),
+            _Chip(
+              icon: Icons.directions_walk_rounded,
+              label: duration,
+              color: navColor,
+            ),
             _Chip(
               icon: Icons.groups_rounded,
               label: '~${area.capacity} kişi',
@@ -657,6 +916,44 @@ class _SelectedAreaPanel extends StatelessWidget {
         ],
       ],
     ).animate().fadeIn(duration: 250.ms);
+  }
+}
+
+/// Hedef yönüne işaret eden ok. Bearing 0=kuzey, 90=doğu...
+class _CompassArrow extends StatelessWidget {
+  const _CompassArrow({
+    required this.bearing,
+    required this.color,
+    required this.arrived,
+  });
+
+  final double bearing;
+  final Color color;
+  final bool arrived;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color.withValues(alpha: 0.18),
+        border: Border.all(color: color.withValues(alpha: 0.55), width: 2),
+      ),
+      child: Center(
+        child: arrived
+            ? Icon(Icons.check_rounded, color: color, size: 30)
+            : Transform.rotate(
+                angle: bearing * math.pi / 180,
+                child: Icon(
+                  Icons.navigation_rounded,
+                  color: color,
+                  size: 30,
+                ),
+              ),
+      ),
+    );
   }
 }
 

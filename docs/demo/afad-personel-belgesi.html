@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>AFAD - Arama Kurtarma Personel Belgesi</title>
+<style>
+  @page { size: A4; margin: 18mm; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Times New Roman', 'Times', serif;
+    color: #111;
+    background: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 22mm 18mm;
+    margin: 0 auto;
+  }
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px double #8a1a1a;
+    padding-bottom: 14px;
+  }
+  .crest {
+    width: 64px;
+    height: 64px;
+    border: 2px solid #8a1a1a;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: #8a1a1a;
+    font-weight: bold;
+    font-family: serif;
+  }
+  .header-text { text-align: center; flex: 1; }
+  .header-text .country {
+    font-size: 13px;
+    letter-spacing: 8px;
+    margin: 0;
+    color: #555;
+  }
+  .header-text .org {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 4px 0 0;
+    color: #8a1a1a;
+  }
+  .header-text .sub {
+    font-size: 12px;
+    margin-top: 2px;
+    color: #444;
+    letter-spacing: 1px;
+  }
+  .doc-no {
+    font-size: 11px;
+    text-align: right;
+    color: #555;
+    line-height: 1.5;
+  }
+  .doc-no strong { color: #111; }
+  .title {
+    text-align: center;
+    margin: 28px 0 20px;
+  }
+  .title h1 {
+    font-size: 18px;
+    letter-spacing: 4px;
+    margin: 0;
+    color: #111;
+  }
+  .title .subtitle {
+    font-size: 11px;
+    color: #555;
+    margin-top: 4px;
+    letter-spacing: 2px;
+  }
+  .photo-box {
+    width: 95px;
+    height: 120px;
+    border: 1.5px solid #888;
+    float: right;
+    margin: 0 0 10px 18px;
+    overflow: hidden;
+    background: #f0f0f0;
+  }
+  .photo-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .info-block { margin-bottom: 6px; }
+  .info-block table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  .info-block td {
+    padding: 6px 4px;
+    vertical-align: top;
+  }
+  .info-block td.label {
+    width: 38%;
+    color: #555;
+    font-weight: 600;
+  }
+  .info-block td.value {
+    border-bottom: 1px dotted #aaa;
+    font-weight: bold;
+  }
+  .section-title {
+    font-size: 12px;
+    font-weight: bold;
+    color: #8a1a1a;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-bottom: 1px solid #8a1a1a;
+    padding-bottom: 4px;
+    margin: 18px 0 10px;
+  }
+  .qr-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 22px;
+    padding: 16px;
+    border: 1.5px solid #8a1a1a;
+    border-radius: 4px;
+    background: #fbf7f7;
+  }
+  .qr-row img {
+    width: 110px;
+    height: 110px;
+  }
+  .qr-text {
+    flex: 1;
+    padding-left: 18px;
+    font-size: 11px;
+    line-height: 1.6;
+    color: #333;
+  }
+  .qr-text strong { color: #8a1a1a; }
+  .signature-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 36px;
+    font-size: 11px;
+  }
+  .signature-row .sig-box {
+    width: 45%;
+    text-align: center;
+    border-top: 1px solid #444;
+    padding-top: 4px;
+    color: #555;
+  }
+  .footer {
+    margin-top: 26px;
+    border-top: 2px double #8a1a1a;
+    padding-top: 10px;
+    text-align: center;
+    font-size: 10px;
+    color: #666;
+    letter-spacing: 1px;
+  }
+  .watermark {
+    position: fixed;
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-30deg);
+    font-size: 90px;
+    color: rgba(138, 26, 26, 0.05);
+    pointer-events: none;
+    font-weight: bold;
+    letter-spacing: 14px;
+    z-index: 0;
+  }
+</style>
+</head>
+<body>
+<div class="watermark">RESMÎ BELGE</div>
+<div class="page">
+
+  <div class="header">
+    <div class="crest">T.C</div>
+    <div class="header-text">
+      <p class="country">TÜRKİYE&nbsp;CUMHURİYETİ</p>
+      <h2 class="org">AFAD</h2>
+      <p class="sub">AFET VE ACİL DURUM YÖNETİMİ BAŞKANLIĞI</p>
+    </div>
+    <div class="doc-no">
+      Belge No: <strong>DEMO-2026-AKUT-12345</strong><br>
+      Düzenleme: 16.05.2026<br>
+      Geçerlilik: 16.05.2027
+    </div>
+  </div>
+
+  <div class="title">
+    <h1>ARAMA-KURTARMA PERSONEL BELGESİ</h1>
+    <p class="subtitle">e-Devlet üzerinden alınan dijital nüsha</p>
+  </div>
+
+  <div class="photo-box"><img src="photo.jpg" alt="Vesikalık"></div>
+
+  <div class="section-title">Personel Bilgileri</div>
+  <div class="info-block">
+    <table>
+      <tr>
+        <td class="label">T.C. Kimlik Numarası</td>
+        <td class="value">1*********0</td>
+      </tr>
+      <tr>
+        <td class="label">Adı Soyadı</td>
+        <td class="value">KEMAL YILMAZ</td>
+      </tr>
+      <tr>
+        <td class="label">Doğum Tarihi</td>
+        <td class="value">01.01.1990</td>
+      </tr>
+      <tr>
+        <td class="label">Bağlı Kuruluş</td>
+        <td class="value">AKUT Arama Kurtarma Derneği</td>
+      </tr>
+      <tr>
+        <td class="label">Görev</td>
+        <td class="value">Saha Operatörü</td>
+      </tr>
+      <tr>
+        <td class="label">Sertifika Sınıfı</td>
+        <td class="value">Arama-Kurtarma Seviye 2</td>
+      </tr>
+      <tr>
+        <td class="label">Uzmanlık Alanı</td>
+        <td class="value">Enkaz Altı Arama / İleri Yaşam Desteği</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section-title">QR Kod İle Belge Doğrulama</div>
+  <div class="qr-row">
+    <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=0&data=https%3A%2F%2Fwww.turkiye.gov.tr%2Fafad-personel-sorgulama%3Fbelge%3DDEMO-2026-AKUT-12345"
+         alt="QR Kod">
+    <div class="qr-text">
+      <strong>Bu belgenin gerçekliği</strong> yandaki QR kod taranarak
+      <strong>e-Devlet üzerinden</strong> doğrulanabilir. QR kodu okutarak
+      personel sicili, sertifika geçerliliği ve görev yetkisi anlık olarak
+      sorgulanır. <br><br>
+      Doğrulama adresi:<br>
+      <code style="font-size:10px;">turkiye.gov.tr/afad-personel-sorgulama</code>
+    </div>
+  </div>
+
+  <div class="signature-row">
+    <div class="sig-box">
+      Yetkili İmza<br>
+      <em>İl AFAD Müdürü</em>
+    </div>
+    <div class="sig-box">
+      Mühür<br>
+      <em>T.C. AFAD Başkanlığı</em>
+    </div>
+  </div>
+
+  <div class="footer">
+    BU BELGE ELEKTRONİK ORTAMDA İMZALANMIŞTIR · 5070 SAYILI KANUN HÜKÜMLERİNE TABİDİR · KVKK UYUMLUDUR
+  </div>
+</div>
+</body>
+</html>

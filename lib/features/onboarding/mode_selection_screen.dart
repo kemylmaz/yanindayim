@@ -27,7 +27,11 @@ class ModeSelectionScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(
-                    child: Center(child: _Hero()),
+                    child: Align(
+                      // Hafif yukarı: -0.25 (0 ortada, -1 en üstte).
+                      alignment: const Alignment(0, -0.25),
+                      child: _Hero(),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   _SwipeTile(
@@ -251,32 +255,32 @@ class _Hero extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // 2× bigger logo (eski 110px → 220px)
+        // Logo daha büyük (280 → 340); altındaki yazı kaldırıldı, tek başına marka.
         SizedBox(
-          width: 220,
-          height: 220,
+          width: 340,
+          height: 340,
           child: Stack(
             alignment: Alignment.center,
             children: [
               Container(
-                width: 220,
-                height: 220,
+                width: 340,
+                height: 340,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppColors.textOnPrimary.withValues(alpha: 0.18),
                 ),
               ),
               Container(
-                width: 172,
-                height: 172,
+                width: 270,
+                height: 270,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppColors.textOnPrimary.withValues(alpha: 0.32),
                 ),
               ),
               Container(
-                width: 132,
-                height: 132,
+                width: 210,
+                height: 210,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
@@ -301,7 +305,7 @@ class _Hero extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const _PremiumLogo(size: 64),
+                child: const _PremiumLogo(size: 108),
               ),
             ],
           ),
@@ -314,16 +318,6 @@ class _Hero extends StatelessWidget {
               duration: 600.ms,
               curve: Curves.easeOutCubic,
             ),
-        const SizedBox(height: 18),
-        Text(
-          'Yanında',
-          style: AppTypography.displayLarge.copyWith(
-            color: AppColors.primaryDeep,
-            fontSize: 56,
-            height: 1.0,
-            fontWeight: FontWeight.w800,
-          ),
-        ).animate(delay: 150.ms).fadeIn(duration: 500.ms),
       ],
     );
   }
@@ -477,7 +471,12 @@ class _SwipeTileState extends State<_SwipeTile>
             ? _padding + _drag * maxDrag
             : width - _handleSize - _padding - _drag * maxDrag;
 
-        return Container(
+        // Kaydırma ilerledikçe kart sona yaklaştıkça küçülür (1.0 → 0.82).
+        final tileScale = 1.0 - _drag * 0.18;
+        return Transform.scale(
+          scale: tileScale,
+          alignment: Alignment.center,
+          child: Container(
           height: _tileHeight,
           decoration: BoxDecoration(
             color: widget.background,
@@ -616,6 +615,7 @@ class _SwipeTileState extends State<_SwipeTile>
                 ),
               ),
             ],
+          ),
           ),
         );
       },

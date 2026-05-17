@@ -1,25 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/models/user_mode.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/rescuer_auth_screen.dart';
 import 'features/auth/victim_auth_screen.dart';
 import 'features/onboarding/mode_selection_screen.dart';
+import 'features/rescuer/ar/rescuer_ar_screen.dart';
+import 'features/rescuer/dashboard/rescuer_dashboard_screen.dart';
 import 'features/rescuer/home/rescuer_home_screen.dart';
 import 'features/rescuer/triage/triage_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/victim/chat/chat_screen.dart';
 import 'features/victim/checkin/checkin_screen.dart';
 import 'features/victim/donation/donation_screen.dart';
+import 'features/victim/health/health_card_screen.dart';
 import 'features/victim/home/victim_home_screen.dart';
 import 'features/victim/map/assembly_map_screen.dart';
-import 'features/victim/pfa/pfa_screen.dart';
 import 'features/victim/sos/sos_active_screen.dart';
 
+/// Açılışta Supabase oturumu varsa kullanıcıyı doğrudan rolüne uygun ana
+/// ekrana atar; yoksa onboarding'i gösterir. Böylece bir kez giriş yapan
+/// kullanıcı bir daha auth ekranını görmez.
+String _initialLocation() {
+  try {
+    final session = Supabase.instance.client.auth.currentSession;
+    if (session == null) return '/onboarding';
+    final role = session.user.userMetadata?['role'] as String?;
+    return role == 'rescuer' ? '/rescuer' : '/victim';
+  } catch (_) {
+    return '/onboarding';
+  }
+}
+
 final _router = GoRouter(
-  initialLocation: '/onboarding',
+  initialLocation: _initialLocation(),
   routes: [
     GoRoute(
       path: '/onboarding',
@@ -58,8 +75,8 @@ final _router = GoRouter(
           builder: (context, state) => ChatScreen(),
         ),
         GoRoute(
-          path: 'pfa',
-          builder: (context, state) => const PfaScreen(),
+          path: 'health',
+          builder: (context, state) => const HealthCardScreen(),
         ),
         GoRoute(
           path: 'map',
@@ -77,8 +94,16 @@ final _router = GoRouter(
     ),
     GoRoute(
       path: '/rescuer',
-      builder: (context, state) => const RescuerHomeScreen(),
+      builder: (context, state) => const RescuerDashboardScreen(),
       routes: [
+        GoRoute(
+          path: 'scan',
+          builder: (context, state) => const RescuerHomeScreen(),
+        ),
+        GoRoute(
+          path: 'ar',
+          builder: (context, state) => const RescuerArScreen(),
+        ),
         GoRoute(
           path: 'triage',
           builder: (context, state) => const TriageScreen(),
@@ -94,7 +119,7 @@ class YanindaApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
-      title: 'Yanında',
+      title: 'Yanındayım',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       routerConfig: _router,

@@ -36,7 +36,7 @@ class EmergencyService {
         ? '\nKonum: https://maps.google.com/?q=$lastLat,$lastLng'
         : '';
     final body = 'İmdat! $userName güvenli değil, acil yardıma ihtiyaç var.'
-        '$locationLine\n— Yanında uygulamasından otomatik gönderildi.';
+        '$locationLine\n— Yanındayım uygulamasından otomatik gönderildi.';
 
     if (emergencyContacts.isNotEmpty) {
       await sendEmergencySms(recipients: emergencyContacts, body: body);

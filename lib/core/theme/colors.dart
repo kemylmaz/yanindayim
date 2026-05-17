@@ -36,6 +36,7 @@ class AppColors {
   static const Color textOnPrimary = Color(0xFFFFFFFF);   // Beyaz on emerald
   static const Color textOnAmber = Color(0xFF3D2410);
   static const Color textDisabled = Color(0xFF9AA89F);
+  static const Color creamWhite = Color(0xFFF5EFE0);      // Krem-beyaz logo rengi
 
   // Anlam renkleri
   static const Color warning = Color(0xFFE5B928);

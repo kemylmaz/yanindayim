@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Yanında</string>
+	<string>Yanındayım</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Enkaz altındaki kullanıcıları bulmak ve kurtarıcılara sinyal göndermek için Bluetooth kullanıyoruz.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
@@ -20,6 +20,10 @@
 	<string>Enkaz modunda son konumunuzu kurtarıcılara iletmek için kullanıyoruz.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Sesli komut ile düdüğü kapatabilmek için mikrofon kullanıyoruz.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Acil iletişim listeni hızlıca oluşturabilmen için rehbere erişiyoruz.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>AR Beacon Tarama sırasında enkaz altındaki mağdurların konumunu canlı işaretlemek için kamerayı kullanıyoruz.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Sesli komutları tanımak için kullanıyoruz.</string>
 	<key>UIBackgroundModes</key>

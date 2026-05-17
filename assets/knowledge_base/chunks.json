@@ -3941,7 +3941,7 @@
       "source": "AKUT - Enkaz Alti",
       "category": "enkaz_alti",
       "title": "Pil ve Telefon Tasarrufu",
-      "text": "Enkaz altinda telefon hayat kurtaricidir, pili maksimum verim icin kullanilmalidir. Hemen: ucak moduna al (sebeke aramaktan vazgec — zaten yok, pili tuketir), parlakligi minimum yap, klavye titresimini kapat, butun bildirimleri kapat, GPS'i kapat (zaten son konum kayitli). Eğer 'Yanında' uygulamasi varsa, 'Enkaz Modu'na geç — bu pili daha akilli kullanir, ekrani kapatir, sadece BLE Beacon yayinini koruva sürdürür. Tahmini kalan pil suresi: %50 pile sahip modern telefon, enkaz modunda 12-18 saat dayanabilir. Eger telefon donarsa, restart yerine sadece bilinmeyen islemleri durdur. Kamera flasi kullanmaktan kacin — cok pil tuketir. SMS gondermek aramadan az pil tuketir.",
+      "text": "Enkaz altinda telefon hayat kurtaricidir, pili maksimum verim icin kullanilmalidir. Hemen: ucak moduna al (sebeke aramaktan vazgec — zaten yok, pili tuketir), parlakligi minimum yap, klavye titresimini kapat, butun bildirimleri kapat, GPS'i kapat (zaten son konum kayitli). Eğer 'Yanındayım' uygulamasi varsa, 'Enkaz Modu'na geç — bu pili daha akilli kullanir, ekrani kapatir, sadece BLE Beacon yayinini koruva sürdürür. Tahmini kalan pil suresi: %50 pile sahip modern telefon, enkaz modunda 12-18 saat dayanabilir. Eger telefon donarsa, restart yerine sadece bilinmeyen islemleri durdur. Kamera flasi kullanmaktan kacin — cok pil tuketir. SMS gondermek aramadan az pil tuketir.",
       "embedding": [
         -0.046206,
         0.122765,

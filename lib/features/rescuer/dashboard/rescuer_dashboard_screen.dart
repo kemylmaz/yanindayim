@@ -5,8 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/theme/typography.dart';
 
-class VictimHomeScreen extends StatelessWidget {
-  const VictimHomeScreen({super.key});
+/// Destek birimi ana ekranı — depremzede ana ekranıyla aynı dock yapısı,
+/// merkez butonu S.O.S yerine "Beacon Tarama" (kurtarıcı modu).
+class RescuerDashboardScreen extends StatelessWidget {
+  const RescuerDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -31,17 +33,26 @@ class VictimHomeScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   Expanded(
                     child: Center(
-                      child: _SosButton(
-                        onPressed: () => context.push('/victim/sos'),
-                      )
-                          .animate(delay: 200.ms)
-                          .fadeIn(duration: 600.ms)
-                          .scale(
-                            begin: const Offset(0.92, 0.92),
-                            end: const Offset(1.0, 1.0),
-                            duration: 600.ms,
-                            curve: Curves.easeOutCubic,
-                          ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _ScanButton(
+                            onPressed: () => context.push('/rescuer/scan'),
+                          )
+                              .animate(delay: 200.ms)
+                              .fadeIn(duration: 600.ms)
+                              .scale(
+                                begin: const Offset(0.92, 0.92),
+                                end: const Offset(1.0, 1.0),
+                                duration: 600.ms,
+                                curve: Curves.easeOutCubic,
+                              ),
+                          const SizedBox(height: 14),
+                          _ArQuickButton(
+                            onTap: () => context.push('/rescuer/ar'),
+                          ).animate(delay: 350.ms).fadeIn(duration: 400.ms),
+                        ],
+                      ),
                     ),
                   ),
                   _QuickDock(
@@ -116,9 +127,9 @@ class _TopBar extends StatelessWidget {
           ),
           child: const Center(
             child: Icon(
-              Icons.volunteer_activism_rounded,
+              Icons.medical_services_rounded,
               color: AppColors.textOnPrimary,
-              size: 24,
+              size: 22,
             ),
           ),
         ),
@@ -188,7 +199,7 @@ class _Greeting extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Şu an güvendesin.',
+          'Sahaya hazırsın.',
           style: AppTypography.displayMedium.copyWith(
             color: AppColors.primaryDeep,
             height: 1.1,
@@ -196,7 +207,7 @@ class _Greeting extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'Acil bir durum olursa aşağıdaki düğmeye bas. Hazırım.',
+          'Çevredeki SOS yayını yapan mağdurları tarayarak haritada görebilirsin.',
           style: AppTypography.bodyMedium.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -206,18 +217,18 @@ class _Greeting extends StatelessWidget {
   }
 }
 
-// ──────────────────────────────── SOS button ────────────────────────────────
+// ──────────────────────────────── scan button ───────────────────────────────
 
-class _SosButton extends StatefulWidget {
-  const _SosButton({required this.onPressed});
+class _ScanButton extends StatefulWidget {
+  const _ScanButton({required this.onPressed});
 
   final VoidCallback onPressed;
 
   @override
-  State<_SosButton> createState() => _SosButtonState();
+  State<_ScanButton> createState() => _ScanButtonState();
 }
 
-class _SosButtonState extends State<_SosButton>
+class _ScanButtonState extends State<_ScanButton>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ring;
   bool _pressed = false;
@@ -241,9 +252,9 @@ class _SosButtonState extends State<_SosButton>
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Acil SOS başlat',
+      label: 'Beacon tarama başlat',
       hint:
-          'Aktive ettiğinde düdük çalar, titreşim başlar, 60 saniye sonra acil kişilere SMS ve 112 araması açılır.',
+          'Yakındaki SOS yayını yapan mağdurları haritada gösterir, kamera ile etrafa baktığında konumlarını canlı işaretler.',
       onTap: widget.onPressed,
       child: AspectRatio(
         aspectRatio: 1,
@@ -257,96 +268,96 @@ class _SosButtonState extends State<_SosButton>
             duration: const Duration(milliseconds: 180),
             curve: Curves.easeOutCubic,
             child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Outer expanding rings (subtle warning)
-              AnimatedBuilder(
-                animation: _ring,
-                builder: (context, _) {
-                  return CustomPaint(
-                    size: Size.infinite,
-                    painter: _SosRingsPainter(progress: _ring.value),
-                  );
-                },
-              ),
-              // Main button
-              FractionallySizedBox(
-                widthFactor: 0.72,
-                heightFactor: 0.72,
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFFD15B5B), AppColors.critical],
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.critical.withValues(alpha: 0.45),
-                        blurRadius: 28,
-                        offset: const Offset(0, 12),
+              alignment: Alignment.center,
+              children: [
+                AnimatedBuilder(
+                  animation: _ring,
+                  builder: (context, _) {
+                    return CustomPaint(
+                      size: Size.infinite,
+                      painter: _ScanRingsPainter(progress: _ring.value),
+                    );
+                  },
+                ),
+                FractionallySizedBox(
+                  widthFactor: 0.72,
+                  heightFactor: 0.72,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [AppColors.primarySoft, AppColors.primary],
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.warning_rounded,
-                        color: AppColors.textOnPrimary,
-                        size: 38,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'S.O.S',
-                        style: AppTypography.displayLarge.copyWith(
-                          color: AppColors.textOnPrimary,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 6,
-                          height: 1.0,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.45),
+                          blurRadius: 28,
+                          offset: const Offset(0, 12),
                         ),
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: AppColors.textOnPrimary
-                                  .withValues(alpha: 0.9),
-                            ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.radar_rounded,
+                          color: AppColors.textOnPrimary,
+                          size: 44,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'BEACON\nTARAMA',
+                          textAlign: TextAlign.center,
+                          style: AppTypography.headlineMedium.copyWith(
+                            color: AppColors.textOnPrimary,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 2.5,
+                            height: 1.05,
+                            fontSize: 18,
                           ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Beacon sinyalleri aktif',
-                            style: AppTypography.labelSmall.copyWith(
-                              color: AppColors.textOnPrimary
-                                  .withValues(alpha: 0.9),
-                              letterSpacing: 0.8,
-                              fontWeight: FontWeight.w600,
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppColors.textOnPrimary
+                                    .withValues(alpha: 0.9),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                            const SizedBox(width: 6),
+                            Text(
+                              'enkaz altı tespiti',
+                              style: AppTypography.labelSmall.copyWith(
+                                color: AppColors.textOnPrimary
+                                    .withValues(alpha: 0.9),
+                                letterSpacing: 0.6,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
 }
 
-class _SosRingsPainter extends CustomPainter {
-  _SosRingsPainter({required this.progress});
+class _ScanRingsPainter extends CustomPainter {
+  _ScanRingsPainter({required this.progress});
 
   final double progress;
 
@@ -358,13 +369,13 @@ class _SosRingsPainter extends CustomPainter {
     for (var i = 0; i < 3; i++) {
       final phase = (progress + i / 3) % 1.0;
       final radius = (0.36 + phase * 0.6) * maxRadius;
-      final alpha = (1 - phase) * 0.22;
+      final alpha = (1 - phase) * 0.25;
 
       canvas.drawCircle(
         center,
         radius,
         Paint()
-          ..color = AppColors.critical.withValues(alpha: alpha)
+          ..color = AppColors.primary.withValues(alpha: alpha)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2,
       );
@@ -372,13 +383,12 @@ class _SosRingsPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _SosRingsPainter oldDelegate) =>
+  bool shouldRepaint(covariant _ScanRingsPainter oldDelegate) =>
       oldDelegate.progress != progress;
 }
 
 // ──────────────────────────────── bottom dock ───────────────────────────────
 
-/// Ekranın altında iPhone tarzı 5 ikonlu hızlı erişim çubuğu.
 class _QuickDock extends StatelessWidget {
   const _QuickDock({
     required this.onTapChat,
@@ -449,6 +459,53 @@ class _QuickDock extends StatelessWidget {
             onTap: onTapDonation,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ArQuickButton extends StatelessWidget {
+  const _ArQuickButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(999),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.55), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.2),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.camera_alt_rounded,
+              color: AppColors.primary,
+              size: 18,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              'AR ile etrafta tara',
+              style: AppTypography.labelLarge.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

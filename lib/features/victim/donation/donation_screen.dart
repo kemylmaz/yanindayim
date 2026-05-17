@@ -12,44 +12,38 @@ class DonationScreen extends StatelessWidget {
   static const _ngos = <_Ngo>[
     _Ngo(
       name: 'AKUT',
-      description: 'Arama Kurtarma Derneği',
       url: 'https://akut.org.tr/bagis',
-      initials: 'AK',
+      logo: 'assets/images/akut.png',
       color: Color(0xFFD32F2F),
     ),
     _Ngo(
       name: 'Kızılay',
-      description: 'Türk Kızılay',
       url: 'https://www.kizilay.org.tr/bagis',
-      initials: 'KZ',
+      logo: 'assets/images/turkkizilay.png',
       color: Color(0xFFC62828),
     ),
     _Ngo(
       name: 'AHBAP',
-      description: 'AHBAP Platformu',
       url: 'https://ahbap.org/bagisci-ol',
-      initials: 'AH',
+      logo: 'assets/images/ahbap.png',
       color: Color(0xFFE65100),
     ),
     _Ngo(
       name: 'İhtiyaç Haritası',
-      description: 'Doğrudan ihtiyaç eşleştirme',
       url: 'https://www.ihtiyacharitasi.org',
-      initials: 'İH',
+      logo: 'assets/images/ih.png',
       color: Color(0xFFC2185B),
     ),
     _Ngo(
       name: 'AFAD',
-      description: 'Resmi afet koordinasyonu',
       url: 'https://www.afad.gov.tr',
-      initials: 'AF',
+      logo: 'assets/images/afad.png',
       color: Color(0xFF1565C0),
     ),
     _Ngo(
       name: 'TEMA Vakfı',
-      description: 'Çevre + afet sonrası rehabilitasyon',
       url: 'https://www.tema.org.tr/web_14966/bagis_yap.aspx',
-      initials: 'TE',
+      logo: 'assets/images/tema.png',
       color: Color(0xFF2E7D32),
     ),
   ];
@@ -80,7 +74,11 @@ class DonationScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _TopBar(onBack: () => context.go('/victim')),
+                    _TopBar(
+                      onBack: () => context.canPop()
+                          ? context.pop()
+                          : context.go('/victim'),
+                    ),
                     const SizedBox(height: 24),
                     Container(
                       padding: const EdgeInsets.all(20),
@@ -203,7 +201,7 @@ class DonationScreen extends StatelessWidget {
                     const SizedBox(width: 6),
                     Flexible(
                       child: Text(
-                        'Yanında bağışları işlemez — her bağış kurum sitesine yönlendirilir.',
+                        'Yanındayım bağışları işlemez — her bağış kurum sitesine yönlendirilir.',
                         textAlign: TextAlign.center,
                         style: AppTypography.bodySmall.copyWith(
                           color: AppColors.textSecondary,
@@ -224,16 +222,14 @@ class DonationScreen extends StatelessWidget {
 class _Ngo {
   const _Ngo({
     required this.name,
-    required this.description,
     required this.url,
-    required this.initials,
+    required this.logo,
     required this.color,
   });
 
   final String name;
-  final String description;
   final String url;
-  final String initials;
+  final String logo;
   final Color color;
 }
 
@@ -279,34 +275,31 @@ class _NgoCardState extends State<_NgoCard> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                width: 52,
-                height: 52,
+                width: 64,
+                height: 64,
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      widget.ngo.color.withValues(alpha: 0.9),
-                      widget.ngo.color,
-                    ],
-                  ),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(
-                      color: widget.ngo.color.withValues(alpha: 0.35),
+                      color: widget.ngo.color.withValues(alpha: 0.25),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
                   ],
+                  border: Border.all(
+                    color: AppColors.border,
+                    width: 1,
+                  ),
                 ),
-                child: Center(
-                  child: Text(
-                    widget.ngo.initials,
-                    style: AppTypography.headlineMedium.copyWith(
-                      color: AppColors.textOnPrimary,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 18,
-                    ),
+                child: Image.asset(
+                  widget.ngo.logo,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stack) => Icon(
+                    Icons.volunteer_activism_rounded,
+                    color: widget.ngo.color,
+                    size: 28,
                   ),
                 ),
               ),
@@ -322,16 +315,6 @@ class _NgoCardState extends State<_NgoCard> {
                       fontWeight: FontWeight.w800,
                       height: 1.1,
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    widget.ngo.description,
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
-                      height: 1.3,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 10),
                   Row(

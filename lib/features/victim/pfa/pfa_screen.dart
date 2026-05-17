@@ -44,7 +44,13 @@ class _PfaScreenState extends State<PfaScreen> {
     setState(() => _currentNodeId = id);
   }
 
-  void _exit() => context.go('/victim');
+  void _exit() {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/victim');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

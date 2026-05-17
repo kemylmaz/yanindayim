@@ -34,8 +34,8 @@
 
 ## 1. PROJE ÖZETİ
 
-**Uygulama Adı (öneri):** Yanında
-*Alternatifler: Pusula, Nabız, İzVar, SığınakAI, Soluk*
+**Uygulama Adı:** Yanındayım
+*Önceki ad: Yanında — geliştirme sırasında değiştirildi.*
 
 **Tek cümle:** Deprem anında ve sonrasında mağdurlarla kurtarıcıları, internet olmasa bile bir araya getiren, lokal yapay zekayla psikolojik ve pratik destek sunan ücretsiz mobil uygulama.
 

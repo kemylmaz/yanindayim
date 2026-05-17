@@ -1,67 +1,73 @@
-// Bu servis, cihazın mikrofonunu kullanarak kullanıcının sesli komutlarını
-// dinler ve bu ses kayıtlarını gerçek zamanlı olarak metne (String) çevirir.
+// Mikrofonu dinleyip sözleri metne çevirir. Türkçe odaklı, kalıcı dinleme.
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:permission_handler/permission_handler.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 final speechServiceProvider = Provider<SpeechService>((ref) {
   return SpeechService();
 });
 
 class SpeechService {
-  final stt.SpeechToText _speech = stt.SpeechToText();
+  final SpeechToText _speech = SpeechToText();
   bool _isAvailable = false;
 
-  // Servisi ilk kez hazır hale getirmek ve kullanıcıdan mikrofon izni istemek için fonksiyon
+  bool get isListening => _speech.isListening;
+
+  /// Cihazda STT motoru var mı kontrol eder + mikrofon iznini ister.
   Future<bool> initSpeech() async {
     if (_isAvailable) return true;
 
+    // 1) Mikrofon iznini iste (Android'de runtime izin).
     try {
-      // Cihazın ses tanıma motorunu başlatıyoruz
+      final status = await Permission.microphone.request();
+      if (!status.isGranted) {
+        debugPrint('⚠️ Mikrofon izni reddedildi.');
+        return false;
+      }
+    } catch (e) {
+      debugPrint('⚠️ İzin isteği hata verdi: $e');
+    }
+
+    // 2) STT motorunu başlat.
+    try {
       _isAvailable = await _speech.initialize(
-        onStatus: (status) => debugPrint('🎙️ Ses Durumu: $status'),
-        onError: (errorNotification) =>
-            debugPrint('❌ Ses Hatası: $errorNotification'),
+        onStatus: (s) => debugPrint('🎙️ STT durumu: $s'),
+        onError: (e) => debugPrint('❌ STT hata: ${e.errorMsg}'),
       );
       return _isAvailable;
     } catch (e) {
-      debugPrint('❌ SpeechToText başlatılamadı: $e');
+      debugPrint('❌ STT init başarısız: $e');
+      _isAvailable = false;
       return false;
     }
   }
 
-  // Dinlemeyi başlatan fonksiyon. Gelen sesleri anlık olarak kelime kelime 'onResult' callback'ine fırlatır.
+  /// Dinlemeyi başlatır. [onResult] kısmi sonuçlarla sürekli tetiklenir.
+  /// 30 sn'lik kalıcı pencere; konuşma duraklarsa otomatik tekrar başlar.
   Future<void> startListening({required Function(String) onResult}) async {
-    bool ready = await initSpeech();
-    if (!ready) {
-      debugPrint('⚠️ Mikrofon izni reddedildi veya cihaz desteklemiyor.');
-      return;
-    }
+    final ready = await initSpeech();
+    if (!ready) return;
 
     await _speech.listen(
       onResult: (result) {
-        // Kullanıcı konuşmayı bitirdikçe veya durakladıkça en net metni yakalayıp ekrana paslıyoruz
         if (result.recognizedWords.isNotEmpty) {
           onResult(result.recognizedWords);
         }
       },
-      localeId:
-          'tr_TR', // Hackathon Türkiye'de olduğu için Türkçe dil paketini zorunlu kılıyoruz
-      listenFor: const Duration(seconds: 20), // Maksimum dinleme süresi
-      pauseFor: const Duration(
-        seconds: 3,
-      ), // Kullanıcı 3 saniye susarsa dinlemeyi otomatik bitir
+      listenOptions: SpeechListenOptions(
+        listenMode: ListenMode.dictation,
+        partialResults: true,
+        cancelOnError: false,
+      ),
+      localeId: 'tr_TR',
+      listenFor: const Duration(seconds: 30),
+      pauseFor: const Duration(seconds: 4),
     );
   }
 
-  // Dinlemeyi manuel olarak durdurmak için fonksiyon
   Future<void> stopListening() async {
-    if (_speech.isListening) {
-      await _speech.stop();
-    }
+    if (_speech.isListening) await _speech.stop();
   }
-
-  // Şu an aktif olarak dinleme yapılıyor mu bilgisini dönen getter
-  bool get isListening => _speech.isListening;
 }

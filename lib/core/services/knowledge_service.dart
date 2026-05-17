@@ -66,7 +66,8 @@ class KnowledgeService {
       }
     }
 
-    return bestScore > 0 ? best : null;
+    // Threshold: 2 puanın altı çok zayıf eşleşme — random konulara takılmasın.
+    return bestScore >= 2 ? best : null;
   }
 
   String searchRelevantInfo(String query) {
@@ -80,8 +81,9 @@ class KnowledgeService {
 
   static const _stopWords = <String>{
     've', 'ile', 'için', 'bir', 'bu', 'şu', 'da', 'de', 'mi', 'mu', 'mü',
-    'ne', 'nasıl', 'nerede', 'nedir', 'kim', 'kime', 'neden',
-    'var', 'yok', 'beni', 'sana', 'bana', 'olan', 'olur',
+    'ne', 'nasıl', 'nerede', 'nedir', 'kim', 'kime', 'neden', 'nerelerde',
+    'var', 'yok', 'beni', 'sana', 'bana', 'olan', 'olur', 'lütfen',
+    'bana yardım', 'yardim et', 'misin', 'musun',
   };
 
   List<String> _tokenize(String query) {

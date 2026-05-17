@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../../core/services/beacon_broadcast_service.dart';
+import '../../../core/services/health_card_service.dart';
+import '../../../core/services/lockscreen_service.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/theme/typography.dart';
 import 'sos_controller.dart';
@@ -16,6 +20,24 @@ class SosActiveScreen extends ConsumerStatefulWidget {
 
 class _SosActiveScreenState extends ConsumerState<SosActiveScreen> {
   @override
+  void initState() {
+    super.initState();
+    // SOS süresince ekran açık kalsın.
+    WakelockPlus.enable();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    // Kilit ekranını bypass et — telefon uyandığında kilit açmadan SOS gözüksün.
+    LockscreenService.instance.showOverLockscreen();
+  }
+
+  @override
+  void dispose() {
+    WakelockPlus.disable();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    LockscreenService.instance.hideOverLockscreen();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final sos = ref.watch(sosControllerProvider);
 
@@ -26,14 +48,18 @@ class _SosActiveScreenState extends ConsumerState<SosActiveScreen> {
       }
     });
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF1A0808),
-      body: SafeArea(
-        child: switch (sos.phase) {
-          SosPhase.countdown => _CountdownView(state: sos),
-          SosPhase.active => _ActiveView(state: sos),
-          SosPhase.stopped => const SizedBox.shrink(),
-        },
+    // PopScope: kullanıcı yanlışlıkla geri ile çıkmasın.
+    return PopScope(
+      canPop: sos.phase == SosPhase.stopped,
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: SafeArea(
+          child: switch (sos.phase) {
+            SosPhase.countdown => _CountdownView(state: sos),
+            SosPhase.active => _ActiveView(state: sos),
+            SosPhase.stopped => const SizedBox.shrink(),
+          },
+        ),
       ),
     );
   }
@@ -345,10 +371,15 @@ class _ActiveViewState extends ConsumerState<_ActiveView>
 
           const SizedBox(height: 16),
 
+          // Sağlık kart özeti — kurtarıcı SOS ekrandayken kritik bilgileri görür.
+          const _HealthCardSnapshot(),
+
+          const SizedBox(height: 12),
+
           // Erişilebilirlik göstergeleri (titreşim + sesli komut)
           const _AccessibilityStatusRow(),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
           // Milestone list
           _MilestoneList(milestones: state.milestones),
@@ -362,6 +393,118 @@ class _ActiveViewState extends ConsumerState<_ActiveView>
           ),
           const SizedBox(height: 8),
         ],
+      ),
+    );
+  }
+}
+
+/// SOS aktifken telefon ekranında her zaman görünür "acil sağlık özeti" —
+/// kullanıcı bilinçsiz veya kilit ekranındayken kurtarıcı için kritik veri.
+class _HealthCardSnapshot extends ConsumerWidget {
+  const _HealthCardSnapshot();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final card = ref.watch(healthCardProvider);
+    if (card.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.textOnPrimary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: AppColors.textOnPrimary.withValues(alpha: 0.16),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.health_and_safety_rounded,
+                color: AppColors.textOnPrimary,
+                size: 18,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'ACİL SAĞLIK BİLGİSİ',
+                style: AppTypography.labelSmall.copyWith(
+                  color: AppColors.textOnPrimary.withValues(alpha: 0.85),
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              const Spacer(),
+              if (card.bloodType != null && card.bloodType!.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.textOnPrimary,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    card.bloodType!,
+                    style: AppTypography.labelSmall.copyWith(
+                      color: AppColors.critical,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          if (card.fullName.isNotEmpty)
+            Text(
+              card.fullName,
+              style: AppTypography.bodyLarge.copyWith(
+                color: AppColors.textOnPrimary,
+                fontWeight: FontWeight.w800,
+                fontSize: 17,
+              ),
+            ),
+          if (card.allergies.isNotEmpty)
+            _kvRow('Alerji', card.allergies.join(', ')),
+          if (card.chronicConditions.isNotEmpty)
+            _kvRow('Kronik', card.chronicConditions.join(', ')),
+          if (card.medications.isNotEmpty)
+            _kvRow('İlaç', card.medications.join(', ')),
+          if (card.emergencyContactPhone.isNotEmpty)
+            _kvRow(
+              'Yakın',
+              card.emergencyContactName.isNotEmpty
+                  ? '${card.emergencyContactName} ${card.emergencyContactPhone}'
+                  : card.emergencyContactPhone,
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _kvRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 3),
+      child: RichText(
+        text: TextSpan(
+          style: AppTypography.bodySmall.copyWith(
+            color: AppColors.textOnPrimary,
+            fontWeight: FontWeight.w600,
+            height: 1.35,
+          ),
+          children: [
+            TextSpan(
+              text: '$label: ',
+              style: TextStyle(
+                color: AppColors.textOnPrimary.withValues(alpha: 0.7),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            TextSpan(text: value),
+          ],
+        ),
       ),
     );
   }

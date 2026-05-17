@@ -117,66 +117,23 @@ class BeaconScannerService {
     );
   }
 
+  /// Demo için tek bir sahte mağdur: "Emir". Gerçek demo iki telefonla
+  /// yapıldığında Supabase realtime kanalından gelen ikinci telefonun yayını
+  /// otomatik bu listeye eklenir.
   List<VictimBeacon> _generateInitialBeacons() {
-    final rnd = math.Random(42);
     final now = DateTime.now();
     return [
       VictimBeacon(
-        anonymousId: 'a3f-91b',
-        location: _offsetLatLng(_kDemoCenter, 12, 35),
-        batteryPercent: 87,
+        anonymousId: 'Emir',
+        location: _offsetLatLng(_kDemoCenter, 35, 60),
+        batteryPercent: 72,
         bloodType: 'A+',
-        medicalFlags: const ['diyabet'],
-        broadcastStarted: now.subtract(const Duration(minutes: 24)),
+        medicalFlags: const ['astım'],
+        broadcastStarted: now.subtract(const Duration(minutes: 14)),
         lastSeen: now,
-        rssi: -58,
+        rssi: -62,
       ),
-      VictimBeacon(
-        anonymousId: 'b8e-22c',
-        location: _offsetLatLng(_kDemoCenter, 26, 130),
-        batteryPercent: 42,
-        bloodType: '0-',
-        medicalFlags: const ['kalp', 'alerji'],
-        broadcastStarted: now.subtract(const Duration(hours: 1, minutes: 12)),
-        lastSeen: now,
-        rssi: -72,
-      ),
-      VictimBeacon(
-        anonymousId: 'd71-44f',
-        location: _offsetLatLng(_kDemoCenter, 48, 220),
-        batteryPercent: 12,
-        bloodType: 'AB+',
-        medicalFlags: const <String>[],
-        broadcastStarted:
-            now.subtract(const Duration(hours: 3, minutes: 48)),
-        lastSeen: now,
-        rssi: -83,
-      ),
-      VictimBeacon(
-        anonymousId: 'e5a-08d',
-        location: _offsetLatLng(_kDemoCenter, 95, 295),
-        batteryPercent: 68,
-        bloodType: 'B+',
-        medicalFlags: const ['hamile'],
-        broadcastStarted: now.subtract(const Duration(minutes: 8)),
-        lastSeen: now,
-        rssi: -88,
-      ),
-      _emptyExtra(rnd, now),
     ];
-  }
-
-  VictimBeacon _emptyExtra(math.Random rnd, DateTime now) {
-    return VictimBeacon(
-      anonymousId: 'f02-7e1',
-      location: _offsetLatLng(_kDemoCenter, 70, 60),
-      batteryPercent: 31,
-      bloodType: null,
-      medicalFlags: const <String>[],
-      broadcastStarted: now.subtract(const Duration(hours: 2)),
-      lastSeen: now,
-      rssi: -76,
-    );
   }
 
   /// Her tick'te RSSI ve pil seviyesini hafifçe değiştir — canlı tarama hissi.
