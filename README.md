@@ -262,7 +262,8 @@ A few decisions worth stating, because they were deliberate rather than accident
 | | Role |
 |---|---|
 | **Kemal Yılmaz** — [@kemylmaz](https://github.com/kemylmaz) | Product concept, target audience, business model, pitch |
-| **Serhat** — [@username](https://github.com/) | Development |
+| **Serhat Yoldoruk** — [@SerhatYoldoruk](https://github.com/SerhatYoldoruk) | Development |
+| **Emir Özel** — [@Emrzel](https://github.com/Emrzel) | Development |
 
 ---
 
