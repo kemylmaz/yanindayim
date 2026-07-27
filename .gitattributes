@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Keep Markdown as UTF-8 with LF so Turkish characters survive round-trips
+*.md text working-tree-encoding=UTF-8 eol=lf
