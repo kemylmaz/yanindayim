@@ -1,11 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter_ble_peripheral/flutter_ble_peripheral.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:uuid/uuid.dart';
 
 import '../models/beacon.dart';
+import 'ble_constants.dart';
 import 'device_id_service.dart';
 import 'live_beacon_channel.dart';
 import 'storage_service.dart';
@@ -59,21 +62,20 @@ class BeaconBroadcastService {
     );
 
     try {
-      // BLE desteğini kontrol et — Android emulator/iOS simulator'da false dönebilir.
+      // BLE desteğini kontrol et.
       final supported = await FlutterBluePlus.isSupported;
-      if (!supported) {
-        debugPrint('ℹ️ Cihaz BLE desteklemiyor — beacon mock modda yayınlanacak.');
-      } else {
-        // Adapter kapalıysa Android'de aç (iOS'ta otomatik istem gelir).
-        if (FlutterBluePlus.adapterStateNow == BluetoothAdapterState.off) {
-          if (defaultTargetPlatform == TargetPlatform.android) {
-            await FlutterBluePlus.turnOn();
-          }
+      if (supported &&
+          FlutterBluePlus.adapterStateNow == BluetoothAdapterState.off) {
+        if (defaultTargetPlatform == TargetPlatform.android) {
+          await FlutterBluePlus.turnOn();
         }
       }
     } catch (e) {
       debugPrint('⚠️ BLE adapter kontrolü hata verdi: $e');
     }
+
+    // Gerçek BLE advertise — internetsiz çevre cihazlara sinyal gönder.
+    await _startBleAdvertise(beacon);
 
     try {
       await StorageService.beaconBox.put('self', beacon);
@@ -112,7 +114,63 @@ class BeaconBroadcastService {
       debugPrint('⚠️ Live beacon channel remove hata: $e');
     }
 
+    await _stopBleAdvertise();
+
     _setState(const BeaconBroadcastState.idle());
+  }
+
+  /// Gerçek BLE advertise — çevrimdışı yakındaki kurtarıcı cihazlar bizim
+  /// servis UUID'mizi filtreyerek tarama yapınca anonim ID + battery + blood
+  /// kod payload'u alır.
+  Future<void> _startBleAdvertise(Beacon beacon) async {
+    try {
+      // Android 12+ runtime izinleri.
+      final perms = await [
+        Permission.bluetoothAdvertise,
+        Permission.bluetoothConnect,
+      ].request();
+      if (perms.values.any((s) => !s.isGranted)) {
+        debugPrint(
+          '⚠️ BLE advertise izni verilmedi — Supabase fallback üzerinden devam.',
+        );
+        return;
+      }
+
+      final peripheral = FlutterBlePeripheral();
+
+      // Kan grubu kodu (1 byte) + battery (1 byte) — toplam 2 byte.
+      final bloodCode = beacon.bloodType.isEmpty
+          ? 0
+          : (BleConstants.bloodTypeCodes[beacon.bloodType] ?? 0);
+      final battery = beacon.batteryPercent.clamp(0, 100);
+      final manufacturerData = Uint8List.fromList([bloodCode, battery]);
+
+      // Local name: "Y:<anonId>" — 31 byte advertise içine sığacak.
+      final localName = '${BleConstants.localNamePrefix}${beacon.anonymousId}';
+
+      final ad = AdvertiseData(
+        serviceUuid: BleConstants.serviceUuidFull,
+        localName: localName,
+        manufacturerId: BleConstants.manufacturerId,
+        manufacturerData: manufacturerData,
+      );
+      await peripheral.start(advertiseData: ad);
+      debugPrint('✅ BLE advertise başladı: $localName');
+    } catch (e) {
+      debugPrint('⚠️ BLE advertise başlatılamadı: $e');
+    }
+  }
+
+  Future<void> _stopBleAdvertise() async {
+    try {
+      final peripheral = FlutterBlePeripheral();
+      if (await peripheral.isAdvertising) {
+        await peripheral.stop();
+        debugPrint('✅ BLE advertise durdu');
+      }
+    } catch (e) {
+      debugPrint('⚠️ BLE advertise durdurulamadı: $e');
+    }
   }
 
   void _setState(BeaconBroadcastState next) {

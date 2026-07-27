@@ -1,11 +1,15 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../models/beacon.dart';
 import '../models/victim_beacon.dart';
+import 'ble_constants.dart';
 import 'device_id_service.dart';
 import 'live_beacon_channel.dart';
 import 'storage_service.dart';
@@ -36,11 +40,15 @@ class BeaconScannerService {
     Timer? mutateTimer;
     StreamSubscription<BoxEvent>? hiveSub;
     StreamSubscription<List<VictimBeacon>>? remoteSub;
+    StreamSubscription<List<ScanResult>>? bleSub;
     var remoteBeacons = const <VictimBeacon>[];
+    // BLE üzerinden gerçek zamanlı çevredeki cihazların anonim ID → beacon map'i.
+    final bleBeacons = <String, VictimBeacon>{};
 
     void emit() {
-      // Sıra: önce uzak (Supabase realtime), sonra self (Hive), sonra mock'lar.
+      // Sıra: BLE (çevrimdışı yakın), uzak (Supabase), self (Hive), mock.
       final list = <VictimBeacon>[
+        ...bleBeacons.values,
         ...remoteBeacons,
       ];
       final self = _readSelf();
@@ -55,16 +63,12 @@ class BeaconScannerService {
         _mutate(mocks);
         emit();
       });
-      // Hive'daki self beacon değişimlerini canlı izle (aynı cihaz demosu).
       try {
         hiveSub =
             StorageService.beaconBox.watch(key: _kSelfBeaconKey).listen((_) {
           emit();
         });
-      } catch (e) {
-        // beaconBox açık değilse (henüz init olmamış) sessizce geç.
-      }
-      // Supabase realtime — diğer cihazlardan yayın yapan mağdurları dinle.
+      } catch (_) {}
       () async {
         try {
           final myDeviceId = await DeviceIdService.get();
@@ -74,19 +78,107 @@ class BeaconScannerService {
             remoteBeacons = others;
             emit();
           });
-        } catch (e) {
-          // Supabase erişilemiyorsa offline demo modunda çalışmaya devam et.
-        }
+        } catch (_) {}
       }();
+
+      // Gerçek BLE scan — yakındaki yayın yapan mağdurları çevrimdışı yakala.
+      _startBleScan(
+        onResult: (beacon) {
+          bleBeacons[beacon.anonymousId] = beacon;
+          emit();
+        },
+      ).then((sub) => bleSub = sub);
     };
 
     controller.onCancel = () {
       mutateTimer?.cancel();
       hiveSub?.cancel();
       remoteSub?.cancel();
+      bleSub?.cancel();
+      _stopBleScan();
     };
 
     return controller.stream;
+  }
+
+  /// flutter_blue_plus üzerinden Yanındayım servis UUID'sini filtreleyerek
+  /// çevreyi tarar. Her advertisement geldikçe parse edip [onResult] çağırır.
+  Future<StreamSubscription<List<ScanResult>>?> _startBleScan({
+    required void Function(VictimBeacon) onResult,
+  }) async {
+    try {
+      // İzinler (Android 12+)
+      final perms = await [
+        Permission.bluetoothScan,
+        Permission.bluetoothConnect,
+        Permission.locationWhenInUse,
+      ].request();
+      if (perms.values.any((s) => !s.isGranted)) {
+        debugPrint('⚠️ BLE scan izni verilmedi.');
+        return null;
+      }
+
+      if (!await FlutterBluePlus.isSupported) {
+        debugPrint('ℹ️ Cihaz BLE desteklemiyor (scan).');
+        return null;
+      }
+
+      // Sürekli tarama başlat (timeout 0 = devam etsin).
+      await FlutterBluePlus.startScan(
+        withServices: [Guid(BleConstants.serviceUuidFull)],
+        continuousUpdates: true,
+        androidScanMode: AndroidScanMode.lowLatency,
+      );
+
+      final sub = FlutterBluePlus.scanResults.listen((results) {
+        for (final r in results) {
+          final beacon = _parseScanResult(r);
+          if (beacon != null) onResult(beacon);
+        }
+      });
+      debugPrint('✅ BLE scan başladı (servis UUID filter)');
+      return sub;
+    } catch (e) {
+      debugPrint('⚠️ BLE scan başlatılamadı: $e');
+      return null;
+    }
+  }
+
+  Future<void> _stopBleScan() async {
+    try {
+      if (FlutterBluePlus.isScanningNow) {
+        await FlutterBluePlus.stopScan();
+      }
+    } catch (_) {}
+  }
+
+  /// Tek bir advertisement'ı VictimBeacon'a dönüştürür.
+  VictimBeacon? _parseScanResult(ScanResult result) {
+    final adv = result.advertisementData;
+    final name = adv.advName;
+    if (!name.startsWith(BleConstants.localNamePrefix)) return null;
+    final anonId = name.substring(BleConstants.localNamePrefix.length);
+    if (anonId.isEmpty) return null;
+
+    String? bloodType;
+    int battery = 100;
+    final mfg = adv.manufacturerData[BleConstants.manufacturerId];
+    if (mfg != null && mfg.length >= 2) {
+      bloodType = BleConstants.bloodTypeFromCode(mfg[0]);
+      battery = mfg[1].clamp(0, 100);
+    }
+
+    // BLE'den konum gelmez — kullanıcının yakınındaki bilinen merkez varsayılır.
+    return VictimBeacon(
+      anonymousId: anonId,
+      location: _kDemoCenter,
+      batteryPercent: battery,
+      bloodType: bloodType,
+      medicalFlags: const <String>[],
+      broadcastStarted: DateTime.now(),
+      lastSeen: DateTime.now(),
+      rssi: result.rssi,
+    );
   }
 
   /// Hive'dan kaydedilmiş self beacon'ı okur ve VictimBeacon'a dönüştürür.
