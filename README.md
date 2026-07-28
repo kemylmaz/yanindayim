@@ -289,6 +289,12 @@ Flutter ile, EBST Hackathon 2026 kapsamında 40 saatte geliştirildi.
 
 ---
 
+## License
+
+Released under the [MIT License](LICENSE) — free to use, modify, and distribute, provided the copyright notice is retained.
+
+---
+
 <div align="center">
 
 **Çünkü her saniye bir hayattır.**
