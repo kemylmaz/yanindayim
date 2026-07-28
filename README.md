@@ -261,9 +261,9 @@ A few decisions worth stating, because they were deliberate rather than accident
 
 | | Role |
 |---|---|
-| **Kemal Yılmaz** — [@kemylmaz](https://github.com/kemylmaz) | Product concept, target audience, business model, pitch |
-| **Serhat Yoldoruk** — [@SerhatYoldoruk](https://github.com/SerhatYoldoruk) | Development |
-| **Emir Özel** — [@Emrzel](https://github.com/Emrzel) | Development |
+| **Kemal Yılmaz** — [@kemylmaz](https://github.com/kemylmaz) | Product concept, target audience, business model and pitch. BLE beacon scanning, SOS flow with lock-screen bypass, onboarding and role selection, Android permission handling, whistle beacon audio. |
+| **Serhat Yoldoruk** — [@SerhatYoldoruk](https://github.com/SerhatYoldoruk) | On-device AI assistant — RAG knowledge engine and Gemma integration, chat interface, speech service. Supabase backend and data layer, offline assembly-point map. |
+| **Emir Özel** — [@Emrzel](https://github.com/Emrzel) | Data preparation — first-aid knowledge base for the AI assistant, AFAD assembly-point dataset, psychological first-aid flow content. Demo scenario and jury presentation. |
 
 ---
 
